@@ -15,7 +15,7 @@ const IndexPage = () => {
     <Layout title="Home">
       <h1>課題View</h1>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
-        {Object.entries(works).map(([v, k]) => (
+        {Object.entries(works).map(([k, v]) => (
           <div
             key={k}
             style={{
