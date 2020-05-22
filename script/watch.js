@@ -1,29 +1,19 @@
 const chokidar = require('chokidar')
 const fs = require('fs')
 const child_process = require('child_process')
+const homeDir =
+  process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
 
-const dir = '/Users/hiro/Box/FI_netpro2020_kadai_uploadbox/第2回課題_締切_05_22'
-// const dir = './hoge'
+const [_, _own, targetDir, targetFilename, programArg] = process.argv
+const dir = `${homeDir}/Box/FI_netpro2020_kadai_uploadbox/${targetDir}`
 const outFile = './out/result.json'
-const targetFilename = 'XmasTree.java'
 
 const watcher = chokidar.watch(dir, {
   ignored: /^\./,
   persistent: true,
 })
 
-console.log('watch start')
-function exec(path) {
-  const paths = path.split('/')
-  const filename = paths.pop()
-  if (filename !== targetFilename) return
-  const id = paths.pop()
-  const result = child_process.execSync(`java ${path} 20 20`, {
-    encoding: 'utf8',
-  })
-  saveResult(id, result)
-}
-
+console.log(`watch start "${dir}"`)
 watcher
   .on('add', exec)
   .on('change', exec)
@@ -34,10 +24,21 @@ watcher
     console.error('Error happened', error)
   })
 
+function exec(path) {
+  const paths = path.split('/')
+  const filename = paths.pop()
+  if (filename !== targetFilename) return
+  const id = paths.pop()
+  const result = child_process.execSync(`java ${path} ${programArg}`, {
+    encoding: 'utf8',
+  })
+  saveResult(id, result)
+}
+
 function saveResult(id, text) {
   const data = fs.readFileSync(outFile, 'utf8')
   const current = JSON.parse(data)
+  // if (!current[id]) current[id] = {}
   current[id] = text
-  console.log(current)
   fs.writeFileSync(outFile, JSON.stringify(current))
 }
