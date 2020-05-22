@@ -11,7 +11,8 @@ const IndexPage = () => {
       setWorks(data.data)
     })
   }, [])
-
+  const workEnts = Object.entries(works)
+  workEnts.sort(([k], [k2]) => (k === k2 ? 0 : k < k2 ? -1 : 1))
   return (
     <Layout title="Home">
       <h1>課題View</h1>
@@ -21,7 +22,7 @@ const IndexPage = () => {
         </button>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
-        {Object.entries(works).map(([k, v]) => (
+        {workEnts.map(([k, v]) => (
           <div
             key={k}
             style={{
@@ -33,7 +34,7 @@ const IndexPage = () => {
           >
             <h4 style={{ margin: '4px 0 0 0' }}>{k}</h4>
             <code>
-              <pre>{v}</pre>
+              <pre style={{ fontSize: 'calc(200px /20)' }}>{v}</pre>
             </code>
           </div>
         ))}
