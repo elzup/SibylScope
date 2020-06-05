@@ -6,7 +6,8 @@
     "build": "next build",
     "export": "next build && next export",
     "start": "next start",
-    "type-check": "tsc"
+    "type-check": "tsc",
+    "serve": "ts-node --project tsconfig.node.json script/watch.ts"
   },
   "dependencies": {
     "axios": "^0.19.2",

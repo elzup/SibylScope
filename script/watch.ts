@@ -4,9 +4,9 @@ import { execSync } from 'child_process'
 const homeDir =
   process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
 
-const dir = `${homeDir}/Box/FI_netpro2020_kadai_uploadbox/`
 const outFile = './out/result.json'
-const tasks = JSON.parse(fs.readFileSync(outFile, 'utf8')) as Task
+const tasks = JSON.parse(fs.readFileSync('./out/tasks.json', 'utf8')) as Task
+const dir = `${homeDir}/${tasks.boxRootFromHome}`
 
 const watcher = chokidar.watch(dir, {
   ignored: /^\./,
@@ -64,6 +64,9 @@ function exec(path) {
   const profile = tasks.profiles.find((p) => p.dir === profileDir)
 
   if (!profile) return
+
+  console.log(profileDir)
+  console.log(filename)
   const file = profile.files.find((f) => f.name === filename)
 
   if (!file) return
@@ -84,6 +87,8 @@ function saveResult(
   name: string,
   text: string
 ) {
+  console.log(`log: ${profile}, ${studentId}, ${name}, ${text}`)
+
   const data = fs.readFileSync(outFile, 'utf8')
   const current = JSON.parse(data) as Result
   if (!current[profile.id]) {

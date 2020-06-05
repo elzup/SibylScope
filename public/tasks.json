@@ -1,18 +1,12 @@
 {
-  "boxRootFromHome": "/Box/FI_netpro2020_kadai_uploadbox/",
+  "boxRootFromHome": "Box/FI_netpro2020_kadai_uploadbox/",
   "profiles": [{
-      "id": "4_JUnit",
+      "id": "4_TCP-UDP",
       "dir": "第4回課題_締切_06_05",
       "files": [{
-          "name": "XmasTreeKadai.java",
-          "args": "20 20 3 3 3",
-          "skip": true
-        },
-        {
-          "name": "HeikinCKadai.java",
-          "skip": true
-        }
-      ]
+        "name": "Renshu.java",
+        "skip": true
+      }]
     },
     {
       "id": "5_TCP-UDP",
