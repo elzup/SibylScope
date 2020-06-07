@@ -74,18 +74,3 @@ const IndexPage = () => {
 }
 
 export default IndexPage
-
-const comp3 = (a, b) => {
-  const [aid, aact] = a[2].split(':')
-  const [i1, i2] = aid.split('_').map(Number)
-  const ati = i1 * 1000 + i2 * 10
-
-  const [bid, bact] = b[2].split(':')
-  const [b1, b2] = bid.split('_').map(Number)
-  const bti = b1 * 1000 + b2 * 10
-  if (ati === bti) {
-    return a[0] - b[0]
-  }
-
-  return ati - bti
-}
