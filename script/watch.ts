@@ -1,6 +1,7 @@
 import chokidar from 'chokidar'
 import fs from 'fs'
 import { execSync } from 'child_process'
+import _ from 'lodash'
 const homeDir =
   process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
 
@@ -15,6 +16,7 @@ const watcher = chokidar.watch(dir, {
 
 type ProfileFile = {
   name: string
+  regex: string
   args?: string
   skip?: boolean
 }
@@ -67,7 +69,7 @@ function exec(path) {
 
   console.log(profileDir)
   console.log(filename)
-  const file = profile.files.find((f) => f.name === filename)
+  const file = profile.files.find((f) => new RegExp(f.regex).exec(filename))
 
   if (!file) return
   if (file.skip) {
@@ -92,16 +94,12 @@ function saveResult(
   const data = fs.readFileSync(outFile, 'utf8')
   const current = JSON.parse(data) as Result
   if (!current[profile.id]) {
-    current[profile.id] = {
-      profile,
-      users: {},
-    }
+    current[profile.id] = { profile, users: {} }
   }
   if (!current[profile.id].users[studentId]) {
-    current[profile.id].users[studentId] = {
-      results: {},
-    }
+    current[profile.id].users[studentId] = { results: {} }
   }
+
   if (!current[profile.id].users[studentId].results[name]) {
     current[profile.id].users[studentId].results[name] = {
       createdAt: Date.now(),

@@ -1,2 +1,6 @@
 node_modules
 .next
+
+out/
+# public/tasks.json
+public/result.json
