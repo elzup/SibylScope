@@ -5,6 +5,16 @@ import Layout from '../components/Layout'
 import ResultTable from '../components/ResultTable'
 import { Result, Task } from '../types'
 
+const Style = styled.div`
+  .tab {
+    padding: 8px;
+    &[data-active='false'] {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+`
+
 const IndexPage = () => {
   const [result, setResult] = useState<Result | null>(null)
   const [tasks, setTasks] = useState<Task | null>(null)
@@ -27,26 +37,31 @@ const IndexPage = () => {
   const pe = result[selectId]
   return (
     <Layout title="Home">
-      <h1>課題View</h1>
-      <div>
-        {profileEnts
-          .map(([key, pe]) => pe.profile.id)
-          .map((pid) => (
-            <span
-              className="tab"
-              data-active={pid === selectId}
-              onClick={() => setSelectId(pid)}
-            >
-              {pid}
-            </span>
-          ))}
-      </div>
-      <div style={{ float: 'right' }}>
-        <button style={{ border: 'none' }} onClick={() => setNight((v) => !v)}>
-          Light/Dark
-        </button>
-      </div>
-      {pe && <ResultTable pe={pe} />}
+      <Style>
+        <h1>課題View</h1>
+        <div>
+          {profileEnts
+            .map(([key, pe]) => pe.profile.id)
+            .map((pid) => (
+              <span
+                className="tab"
+                data-active={pid === selectId}
+                onClick={() => setSelectId(pid)}
+              >
+                {pid}
+              </span>
+            ))}
+        </div>
+        <div style={{ float: 'right' }}>
+          <button
+            style={{ border: 'none' }}
+            onClick={() => setNight((v) => !v)}
+          >
+            Light/Dark
+          </button>
+        </div>
+        {pe && <ResultTable pe={pe} />}
+      </Style>
     </Layout>
   )
 }
