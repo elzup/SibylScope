@@ -48,6 +48,7 @@ const Style = styled.div`
 const IndexPage = () => {
   const [result, setResult] = useState<Result | null>(null)
   const [tasks, setTasks] = useState<Task | null>(null)
+  const [selectId, setSelectId] = useState<string>('')
   const [isNight, setNight] = useState<boolean>(false)
 
   useEffect(() => {
@@ -63,20 +64,29 @@ const IndexPage = () => {
   }
   const profileEnts = Object.entries(result)
   profileEnts.sort(() => -1)
+  const pe = result[selectId]
   return (
     <Layout title="Home">
       <h1>課題View</h1>
       <div>
-        {profileEnts.map(([key, pe]) => (
-          <span></span>
-        ))}
+        {profileEnts
+          .map(([key, pe]) => pe.profile.id)
+          .map((pid) => (
+            <span
+              className="tab"
+              data-active={pid === selectId}
+              onClick={() => setSelectId(pid)}
+            >
+              {pid}
+            </span>
+          ))}
       </div>
       <div style={{ float: 'right' }}>
         <button style={{ border: 'none' }} onClick={() => setNight((v) => !v)}>
           Light/Dark
         </button>
       </div>
-      {profileEnts.map(([key, pe]) => (
+      {pe && (
         <Style>
           <table>
             <thead>
@@ -127,7 +137,7 @@ const IndexPage = () => {
             </tbody>
           </table>
         </Style>
-      ))}
+      )}
     </Layout>
   )
 }
