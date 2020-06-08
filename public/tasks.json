@@ -5,6 +5,7 @@
       "dir": "第4回課題_締切_06_05",
       "files": [{
         "name": "Rensyu.java",
+        "regex": "Rens[yh]u.java",
         "skip": true
       }]
     },
@@ -12,15 +13,13 @@
       "id": "5_TCP-UDP",
       "dir": "第5回課題_締切_06_12",
       "files": [{
-          "name": "XmasPresent.java",
+          "name": "Serv.java",
+          "regex": ".*Serv.java",
           "skip": true
         },
         {
-          "name": "XmasTCPServ.java",
-          "skip": true
-        },
-        {
-          "name": "XmasTCPClient.java",
+          "name": "Client.java",
+          "regex": ".*Client.java",
           "skip": true
         }
       ]

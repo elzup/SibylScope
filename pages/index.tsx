@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import Axios from 'axios'
 import { Result, Task } from '../types'
+import styled from 'styled-components'
+import { format } from 'date-fns'
+
+const Style = styled.div`
+  min-width: 100%;
+  overflow-x: scroll;
+  th {
+    width: 10vw;
+  }
+`
 
 const IndexPage = () => {
   const [result, setResult] = useState<Result | null>(null)
@@ -30,24 +40,29 @@ const IndexPage = () => {
         </button>
       </div>
       {profileEnts.map(([key, pe]) => (
-        <div
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr' }}
-        >
+        <Style>
           <table>
             <thead>
               <tr>
                 <th></th>
-                {tasks.profiles
-                  .find((p) => p.id === pe.profile.id)
-                  .files.map((file) => (
-                    <th>{file.name}</th>
-                  ))}
+                {pe.profile.files.map((file) => (
+                  <th>{file.name}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {Object.entries(pe.users).map(([userId, user]) => (
                 <tr>
                   <th>{userId}</th>
+                  {pe.profile.files
+                    .map((file) => [file, user.results[file.name]] as const)
+                    .map(([file, userfile]) =>
+                      userfile ? (
+                        <th>{format(userfile.createdAt, 'MM/dd HH:mm')}</th>
+                      ) : (
+                        <th></th>
+                      )
+                    )}
                 </tr>
                 // <div
                 //   key={userId}
@@ -67,7 +82,7 @@ const IndexPage = () => {
               ))}
             </tbody>
           </table>
-        </div>
+        </Style>
       ))}
     </Layout>
   )
