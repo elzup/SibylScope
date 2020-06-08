@@ -32,14 +32,15 @@ const Style = styled.div`
           color: green;
         }
       }
+      &:last-child {
+        border-right: 1px solid #c5c5c5;
+      }
     }
-    tr:last-child > th,
-    tr:last-child > td {
-      border-bottom: 1px solid #c5c5c5;
-    }
-    th:last-child,
-    td:last-child {
-      border-right: 1px solid #c5c5c5;
+    tr:last-child {
+      th,
+      td {
+        border-bottom: 1px solid #c5c5c5;
+      }
     }
   }
 `
