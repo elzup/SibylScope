@@ -12,20 +12,21 @@ export type Task = {
   boxRootFromHome: string
   profiles: Profile[]
 }
-export type Result = {
-  [profileId: string]: {
-    profile: Profile
-    users: {
-      [userId: string]: {
-        results: {
-          [name: string]: {
-            createdAt: number
-            updatedAt: number
-            text: string
-            status: 'OK' | 'NG'
-          }
+export type ProfileResult = {
+  profile: Profile
+  users: {
+    [userId: string]: {
+      results: {
+        [name: string]: {
+          createdAt: number
+          updatedAt: number
+          text: string
+          status: 'OK' | 'NG'
         }
       }
     }
   }
+}
+export type Result = {
+  [profileId: string]: ProfileResult
 }
