@@ -130,13 +130,11 @@ function saveResult(
       status: 'OK',
     }
   } else {
-    if (current[profile.id].users[studentId].results[name].hash !== hash) {
-      current[profile.id].users[studentId].results[name] = {
-        ...current[profile.id].users[studentId].results[name],
-        updatedAt: Date.now(),
-        hash,
-        text,
-      }
+    current[profile.id].users[studentId].results[name] = {
+      ...current[profile.id].users[studentId].results[name],
+      updatedAt: Date.now(),
+      hash,
+      text,
     }
   }
   fs.writeFileSync(outFile, JSON.stringify(current))
