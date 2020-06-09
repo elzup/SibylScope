@@ -145,3 +145,7 @@ function filehash(path) {
   hash.update(fs.readFileSync(path))
   return hash.digest('base64')
 }
+
+function makeDockerCommand(command) {
+  return `docker exec -i java /bin/bash -c "cd /root && ${command}"`
+}

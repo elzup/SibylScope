@@ -4,3 +4,6 @@ node_modules
 out/
 # public/tasks.json
 public/result.json
+
+vm/
+!vm/.gitkeep
