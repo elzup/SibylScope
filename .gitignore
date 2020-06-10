@@ -2,8 +2,9 @@ node_modules
 .next
 
 out/
-# public/tasks.json
+public/tasks.json
 public/result.json
 
 vm/
 !vm/.gitkeep
+tester/

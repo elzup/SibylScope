@@ -1,16 +1,18 @@
-import chokidar from 'chokidar'
-import fs from 'fs'
 import { execSync } from 'child_process'
-import _ from 'lodash'
-import { stringify } from 'querystring'
+import chokidar from 'chokidar'
 import crypto from 'crypto'
-import { CLIENT_RENEG_LIMIT } from 'tls'
+import fs from 'fs'
+import _ from 'lodash'
 
 const homeDir =
   process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
+const workDir = './vm/workspace'
 
-const outFile = './out/result.json'
-const tasks = JSON.parse(fs.readFileSync('./out/tasks.json', 'utf8')) as Task
+const OUT_DIR = process.env.OUT_DIR || './out'
+const outFile = `${OUT_DIR}/result.json`
+const tasks = JSON.parse(
+  fs.readFileSync(`${OUT_DIR}/tasks.json`, 'utf8')
+) as Task
 const dir = `${homeDir}/${tasks.boxRootFromHome}`
 
 const data = fs.readFileSync(outFile, 'utf8')
@@ -24,9 +26,20 @@ const watcher = chokidar.watch(dir, {
 type ProfileFile = {
   name: string
   regex: string
-  args?: string
-  skip?: boolean
-}
+} & (
+  | {
+      case: 'check'
+    }
+  | {
+      case: 'load-test'
+      testFile: string
+    }
+  | {
+      case: 'run-test'
+      args?: string
+      expected: string
+    }
+)
 type Profile = {
   id: string
   dir: string
@@ -94,15 +107,28 @@ function exec(path) {
 
   const changed = hash === oldHash
   if (!changed) return console.log('skip')
-  if (file.skip) {
+  if (file.case === 'check') {
     saveResult(profile, studentId, file.name, '', hash)
     return
   }
 
-  const result = execSync(`java ${path} ${file.args || ''}`, {
-    encoding: 'utf8',
-  })
-  saveResult(profile, studentId, file.name, result, hash)
+  fs.rmdirSync(workDir)
+  fs.mkdirSync(workDir)
+  fs.copyFileSync(path, workDir)
+
+  if (file.case === 'load-test') {
+    // copy
+    fs.copyFileSync(file.testFile, workDir)
+    const tfs = file.testFile.split('/')
+    const testFileName = tfs.pop()
+    const cmd = buildDockerCommand(`java ${workDir}/${testFileName}`)
+    const result = execSync(cmd, { encoding: 'utf8' })
+    saveResult(profile, studentId, file.name, result, hash)
+  } else {
+    const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
+    const result = execSync(cmd, { encoding: 'utf8' })
+    saveResult(profile, studentId, file.name, result, hash)
+  }
 }
 
 function saveResult(
@@ -146,6 +172,6 @@ function filehash(path) {
   return hash.digest('base64')
 }
 
-function makeDockerCommand(command) {
+function buildDockerCommand(command) {
   return `docker exec -i java /bin/bash -c "cd /root && ${command}"`
 }
