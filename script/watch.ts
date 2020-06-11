@@ -13,6 +13,7 @@ const outFile = `${OUT_DIR}/result.json`
 const tasks = JSON.parse(
   fs.readFileSync(`${OUT_DIR}/tasks.json`, 'utf8')
 ) as Task
+
 const dir = `${homeDir}/${tasks.boxRootFromHome}`
 
 const data = fs.readFileSync(outFile, 'utf8')
@@ -88,8 +89,6 @@ function exec(path) {
 
   if (!profile) return
 
-  console.log(profileDir)
-  console.log(filename)
   const file = profile.files.find((f) => new RegExp(f.regex).exec(filename))
 
   if (!file) return
@@ -103,12 +102,16 @@ function exec(path) {
     file.name,
     'hash',
   ])
+
   console.log({ hash, oldHash })
 
   const changed = hash === oldHash
   if (!changed) return console.log('skip')
+  console.log(profileDir)
+  console.log(filename)
+  console.log({ hash, oldHash })
   if (file.case === 'check') {
-    saveResult(profile, studentId, file.name, '', hash)
+    saveResult(profile, studentId, file.name, '', hash, 'OK')
     return
   }
 
@@ -122,12 +125,20 @@ function exec(path) {
     const tfs = file.testFile.split('/')
     const testFileName = tfs.pop()
     const cmd = buildDockerCommand(`java ${workDir}/${testFileName}`)
-    const result = execSync(cmd, { encoding: 'utf8' })
-    saveResult(profile, studentId, file.name, result, hash)
+    const result = execSync(cmd, { encoding: 'utf8' }) as 'OK' | 'NG'
+    saveResult(profile, studentId, file.name, result, hash, result)
   } else {
     const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
     const result = execSync(cmd, { encoding: 'utf8' })
-    saveResult(profile, studentId, file.name, result, hash)
+
+    saveResult(
+      profile,
+      studentId,
+      file.name,
+      result,
+      hash,
+      result.match(file.expected) ? 'OK' : 'NG'
+    )
   }
 }
 
@@ -136,7 +147,8 @@ function saveResult(
   studentId: string,
   name: string,
   text: string,
-  hash: string
+  hash: string,
+  status: 'OK' | 'NG'
 ) {
   console.log(`log: ${profile}, ${studentId}, ${name}, ${text}`)
 
@@ -153,7 +165,7 @@ function saveResult(
       updatedAt: Date.now(),
       hash,
       text,
-      status: 'OK',
+      status,
     }
   } else {
     current[profile.id].users[studentId].results[name] = {
@@ -161,6 +173,7 @@ function saveResult(
       updatedAt: Date.now(),
       hash,
       text,
+      status,
     }
   }
   fs.writeFileSync(outFile, JSON.stringify(current))
