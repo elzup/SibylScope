@@ -3,6 +3,7 @@ import chokidar from 'chokidar'
 import crypto from 'crypto'
 import fs from 'fs'
 import _ from 'lodash'
+import { Task, Result, Profile } from '../types'
 
 const homeDir =
   process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
@@ -23,51 +24,6 @@ const watcher = chokidar.watch(dir, {
   ignored: /^\./,
   persistent: true,
 })
-
-type ProfileFile = {
-  name: string
-  regex: string
-} & (
-  | {
-      case: 'check'
-    }
-  | {
-      case: 'load-test'
-      testFile: string
-    }
-  | {
-      case: 'run-test'
-      args?: string
-      expected: string
-    }
-)
-type Profile = {
-  id: string
-  dir: string
-  files: ProfileFile[]
-}
-type Task = {
-  boxRootFromHome: string
-  profiles: Profile[]
-}
-type Result = {
-  [profileId: string]: {
-    profile: Profile
-    users: {
-      [userId: string]: {
-        results: {
-          [name: string]: {
-            createdAt: number
-            updatedAt: number
-            text: string
-            hash: string
-            status: 'OK' | 'NG'
-          }
-        }
-      }
-    }
-  }
-}
 
 console.log(`watch start "${dir}"`)
 watcher
@@ -153,7 +109,7 @@ function saveResult(
   console.log(`log: ${profile}, ${studentId}, ${name}, ${text}`)
 
   if (!current[profile.id]) {
-    current[profile.id] = { profile, users: {} }
+    current[profile.id] = { users: {} }
   }
   if (!current[profile.id].users[studentId]) {
     current[profile.id].users[studentId] = { results: {} }

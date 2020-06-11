@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import styled from 'styled-components'
-import { ProfileResult } from '../types'
+import { ProfileResult, Profile } from '../types'
 
 const Style = styled.div`
   width: 100%;
@@ -44,16 +44,17 @@ const Style = styled.div`
 
 type Props = {
   pe: ProfileResult
+  profile: Profile
 }
 
-function ResultTable({ pe }: Props) {
+function ResultTable({ profile, pe }: Props) {
   return (
     <Style>
       <table>
         <thead>
           <tr>
             <th></th>
-            {pe.profile.files.map((file) => (
+            {profile.files.map((file) => (
               <th>{file.name}</th>
             ))}
           </tr>
@@ -62,7 +63,7 @@ function ResultTable({ pe }: Props) {
           {Object.entries(pe.users).map(([userId, user]) => (
             <tr>
               <th>{userId}</th>
-              {pe.profile.files
+              {profile.files
                 .map((file) => [file, user.results[file.name]] as const)
                 .map(([_file, userfile]) =>
                   userfile ? (

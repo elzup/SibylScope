@@ -22,12 +22,17 @@ const IndexPage = () => {
   const [isNight, setNight] = useState<boolean>(false)
 
   useEffect(() => {
-    Axios.get<Result>('/result.json').then((data) => {
-      setResult(data.data)
-    })
     Axios.get<Task>('/tasks.json').then((data) => {
       setTasks(data.data)
     })
+    updateResult()
+    function updateResult() {
+      Axios.get<Result>('/result.json').then((data) => {
+        setResult(data.data)
+      })
+    }
+    const si = setInterval(updateResult, 5 * 60 * 1000)
+    return () => clearInterval(si)
   }, [])
   if (tasks === null || result == null) {
     return <p>loading</p>
@@ -35,13 +40,14 @@ const IndexPage = () => {
   const profileEnts = Object.entries(result)
   profileEnts.sort(() => -1)
   const pe = result[selectId]
+  const profile = tasks.profiles.find((p) => p.id === selectId)
   return (
     <Layout title="Home">
       <Style>
         <h1>課題View</h1>
         <div>
-          {profileEnts
-            .map(([key, pe]) => pe.profile.id)
+          {tasks.profiles
+            .map((p) => p.id)
             .map((pid) => (
               <span
                 className="tab"
@@ -60,7 +66,7 @@ const IndexPage = () => {
             Light/Dark
           </button>
         </div>
-        {pe && <ResultTable pe={pe} />}
+        {pe && <ResultTable pe={pe} profile={profile} />}
       </Style>
     </Layout>
   )
