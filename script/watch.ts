@@ -3,11 +3,12 @@ import chokidar from 'chokidar'
 import crypto from 'crypto'
 import fs from 'fs'
 import _ from 'lodash'
-import { Task, Result, Profile } from '../types'
+import rimraf from 'rimraf'
+import { Profile, Result, Task } from '../types'
 
 const homeDir =
   process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
-const workDir = './vm/workspace'
+const workDir = 'vm/workspace'
 
 const OUT_DIR = process.env.OUT_DIR || './out'
 const outFile = `${OUT_DIR}/result.json`
@@ -59,9 +60,7 @@ function exec(path) {
     'hash',
   ])
 
-  console.log({ hash, oldHash })
-
-  const changed = hash === oldHash
+  const changed = hash !== oldHash
   if (!changed) return console.log('skip')
   console.log(profileDir)
   console.log(filename)
@@ -71,17 +70,19 @@ function exec(path) {
     return
   }
 
-  fs.rmdirSync(workDir)
+  rimraf.sync(workDir)
   fs.mkdirSync(workDir)
-  fs.copyFileSync(path, workDir)
+  fs.copyFileSync(path, workDir + '/' + filename)
 
   if (file.case === 'load-test') {
     // copy
-    fs.copyFileSync(file.testFile, workDir)
     const tfs = file.testFile.split('/')
-    const testFileName = tfs.pop()
-    const cmd = buildDockerCommand(`java ${workDir}/${testFileName}`)
-    const result = execSync(cmd, { encoding: 'utf8' }) as 'OK' | 'NG'
+    const testFileName = tfs.pop() || ''
+    const testFilePath = `${workDir}/${testFileName}`
+    fs.copyFileSync(file.testFile, testFilePath)
+    const className = testFileName.split('.')[0] || ''
+    const cmd = buildDockerCommand(`javac ${testFileName} && java ${className}`)
+    const result = execSync(cmd, { encoding: 'utf8' }).trim() as 'OK' | 'NG'
     saveResult(profile, studentId, file.name, result, hash, result)
   } else {
     const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
@@ -98,6 +99,19 @@ function exec(path) {
   }
 }
 
+function initializeUser(profileId: string, studentId: string) {
+  if (!current[profileId]) current[profileId] = { users: {} }
+  if (!current[profileId].users[studentId])
+    current[profileId].users[studentId] = { results: {}, otherFiles: [] }
+}
+
+function saveOtherFile(profile: Profile, studentId: string, name: string) {
+  initializeUser(profile.id, studentId)
+
+  current[profile.id].users[studentId].otherFiles.push({ name })
+  fs.writeFileSync(outFile, JSON.stringify(current))
+}
+
 function saveResult(
   profile: Profile,
   studentId: string,
@@ -108,12 +122,7 @@ function saveResult(
 ) {
   console.log(`log: ${profile}, ${studentId}, ${name}, ${text}`)
 
-  if (!current[profile.id]) {
-    current[profile.id] = { users: {} }
-  }
-  if (!current[profile.id].users[studentId]) {
-    current[profile.id].users[studentId] = { results: {} }
-  }
+  initializeUser(profile.id, studentId)
 
   if (!current[profile.id].users[studentId].results[name]) {
     current[profile.id].users[studentId].results[name] = {
@@ -142,5 +151,5 @@ function filehash(path) {
 }
 
 function buildDockerCommand(command) {
-  return `docker exec -i java /bin/bash -c "cd /root && ${command}"`
+  return `docker exec -i java /bin/bash -c "cd /root/workspace && ${command}"`
 }

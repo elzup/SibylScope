@@ -10,6 +10,7 @@ export type ProfileResult = {
           status: 'OK' | 'NG'
         }
       }
+      otherFiles: { name: string }[]
     }
   }
 }
