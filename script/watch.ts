@@ -48,7 +48,10 @@ function exec(path) {
 
   const file = profile.files.find((f) => new RegExp(f.regex).exec(filename))
 
-  if (!file) return
+  if (!file) {
+    saveOtherFile(profile, studentId, filename)
+    return
+  }
   const hash = filehash(path)
 
   const oldHash = _.get(current, [
