@@ -1,5 +1,5 @@
 {
-  "boxRootFromHome": "script/tests/codeRoot",
+  "codeRoot": "script/tests/codeRoot",
   "profiles": [{
     "id": "Chap4",
     "dir": "Chapter4",

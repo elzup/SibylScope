@@ -42,6 +42,6 @@ export type Profile = {
 }
 
 export type Task = {
-  boxRootFromHome: string
+  codeRoot: string
   profiles: Profile[]
 }
