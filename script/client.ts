@@ -76,8 +76,6 @@ function exec(
 
   if (!profile) return
 
-  console.log({ profile })
-
   const file = profile.files.find((f) => new RegExp(f.regex).exec(filename))
 
   if (!file) {
@@ -98,9 +96,9 @@ function exec(
 
   const changed = hash !== oldHash
   if (!changed) return console.log('skip')
-  console.log(profileDir)
-  console.log(filename)
-  console.log({ hash, oldHash })
+  // console.log(profileDir)
+  // console.log(filename)
+  // console.log({ hash, oldHash })
   if (file.case === 'check') {
     saveUserResult(result, profile, studentId, file.name, '', hash, 'OK')
 
