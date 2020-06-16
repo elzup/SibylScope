@@ -12,14 +12,14 @@ const workDir = 'vm/workspace'
 
 const OUT_DIR = process.env.OUT_DIR || './out'
 const outFile = `${OUT_DIR}/result.json`
-const tasks = JSON.parse(
-  fs.readFileSync(`${OUT_DIR}/tasks.json`, 'utf8')
-) as Task
+const taskFile = `${OUT_DIR}/tasks.json`
+const tasks = JSON.parse( fs.readFileSync(taskFile, 'utf8')) as Task
 
 const dir = `${homeDir}/${tasks.boxRootFromHome}`
 
 const data = fs.readFileSync(outFile, 'utf8')
 const current = JSON.parse(data) as Result
+resetOtherFiles()
 
 const watcher = chokidar.watch(dir, {
   ignored: /^\./,
@@ -144,6 +144,14 @@ function saveResult(
       status,
     }
   }
+  fs.writeFileSync(outFile, JSON.stringify(current))
+}
+function resetOtherFiles() {
+  Object.entries(current).map(([key, pr])=> {
+    Object.entries(pr.users).map(([key, user])=> {
+      user.otherFiles = []
+    })
+  })
   fs.writeFileSync(outFile, JSON.stringify(current))
 }
 

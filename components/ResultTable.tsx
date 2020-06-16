@@ -57,6 +57,7 @@ function ResultTable({ profile, pe }: Props) {
             {profile.files.map((file) => (
               <th>{file.name}</th>
             ))}
+            <th>other files</th>
           </tr>
         </thead>
         <tbody>
@@ -77,6 +78,13 @@ function ResultTable({ profile, pe }: Props) {
                     <td />
                   )
                 )}
+              <td>
+                <div style={{ display: 'grid', width: '20vw' }}>
+                  {user.otherFiles.map((file) => (
+                    <span key={file.name}>{file.name}</span>
+                  ))}
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
