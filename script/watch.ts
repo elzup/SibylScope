@@ -5,20 +5,25 @@ import fs from 'fs'
 import _ from 'lodash'
 import rimraf from 'rimraf'
 import { Profile, Result, Task } from '../types'
+import { exit } from 'process'
 
-const homeDir =
-  process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME']
 const workDir = 'vm/workspace'
 
 const OUT_DIR = process.env.OUT_DIR || './out'
 const outFile = `${OUT_DIR}/result.json`
 const taskFile = `${OUT_DIR}/tasks.json`
-const tasks = JSON.parse( fs.readFileSync(taskFile, 'utf8')) as Task
+const tasks = JSON.parse(fs.readFileSync(taskFile, 'utf8')) as Task
 
-const dir = `${homeDir}/${tasks.boxRootFromHome}`
+const dir = tasks.boxRootFromHome
 
 const data = fs.readFileSync(outFile, 'utf8')
 const current = JSON.parse(data) as Result
+console.log(String())
+if (!checkDockerRunning()) {
+  console.error('java docker not running')
+
+  exit()
+}
 resetOtherFiles()
 
 const watcher = chokidar.watch(dir, {
@@ -147,8 +152,8 @@ function saveResult(
   fs.writeFileSync(outFile, JSON.stringify(current))
 }
 function resetOtherFiles() {
-  Object.entries(current).map(([key, pr])=> {
-    Object.entries(pr.users).map(([key, user])=> {
+  Object.entries(current).map(([key, pr]) => {
+    Object.entries(pr.users).map(([key, user]) => {
       user.otherFiles = []
     })
   })
@@ -164,3 +169,18 @@ function filehash(path) {
 function buildDockerCommand(command) {
   return `docker exec -i java /bin/bash -c "cd /root/workspace && ${command}"`
 }
+
+function checkDockerRunning() {
+  try {
+    return (
+      execSync(`docker exec -i java /bin/bash -c "echo OK"`, {
+        encoding: 'utf8',
+      }).trim() === 'OK'
+    )
+  } catch (e) {
+    // console.error(e)
+    return false
+  }
+}
+
+export default watcher

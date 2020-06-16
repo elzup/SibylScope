@@ -8,6 +8,7 @@
     "start": "next start",
     "type-check": "tsc",
     "serve": "ts-node --project tsconfig.node.json script/watch.ts",
+    "test:serve": "OUT_DIR=script/tests/resultRoot jest script/tests/index.test.ts",
     "serve:dev": "OUT_DIR=public ts-node --project tsconfig.node.json script/watch.ts"
   },
   "dependencies": {
@@ -19,15 +20,36 @@
     "styled-components": "^5.1.1"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.0",
     "@types/lodash": "^4.14.155",
     "@types/node": "^14.0.11",
     "@types/react": "^16.9.16",
     "@types/react-dom": "^16.9.4",
+    "@types/rimraf": "^3.0.0",
     "@types/styled-components": "^5.1.0",
     "chokidar": "^3.4.0",
+    "jest": "^26.0.1",
     "lodash": "^4.17.15",
+    "ts-jest": "^26.1.0",
     "ts-node": "^8.10.2",
     "typescript": "3.9.3"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.node.json"
+      }
+    },
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ]
+  }
 }

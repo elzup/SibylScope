@@ -7,4 +7,5 @@ public/result.json
 
 vm/
 !vm/.gitkeep
-tester/
+/tester/
+/script/tests/codeRoot
