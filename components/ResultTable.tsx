@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import styled from 'styled-components'
 import { ProfileResult, Profile } from '../types'
+import Axios from 'axios'
 
 const Style = styled.div`
   width: 100%;
@@ -40,14 +42,39 @@ const Style = styled.div`
       }
     }
   }
+  td.post-result > div {
+    display: grid;
+  }
+  [data-visible='false'] {
+    display: none;
+  }
 `
 
 type Props = {
-  pe: ProfileResult
   profile: Profile
+  isViewTs: boolean
 }
 
-function ResultTable({ profile, pe }: Props) {
+function useProfileResult(profileId: string) {}
+
+function ResultTable({ profile, isViewTs }: Props) {
+  const [result, setResult] = useState<ProfileResult | 'loading' | 'none'>(
+    'loading'
+  )
+
+  useEffect(() => {
+    updateResult()
+    function updateResult() {
+      Axios.get<ProfileResult>(`/result_${profile.id}.json`).then((data) => {
+        setResult(data.data)
+      })
+    }
+    const si = setInterval(updateResult, 5 * 60 * 1000)
+    return () => clearInterval(si)
+  }, [profile.id])
+  if (result === 'loading') return <span>loading</span>
+  if (result === 'none') return <span>no data</span>
+
   return (
     <Style>
       <table>
@@ -55,27 +82,31 @@ function ResultTable({ profile, pe }: Props) {
           <tr>
             <th></th>
             {profile.files.map((file) => (
-              <th>{file.name}</th>
+              <th key={file.name}>{file.name}</th>
             ))}
             <th>other files</th>
           </tr>
         </thead>
         <tbody>
-          {Object.entries(pe.users).map(([userId, user]) => (
-            <tr>
+          {Object.entries(result.users).map(([userId, user]) => (
+            <tr key={userId}>
               <th>{userId}</th>
               {profile.files
                 .map((file) => [file, user.results[file.name]] as const)
-                .map(([_file, userfile]) =>
+                .map(([_file, userfile], i) =>
                   userfile ? (
-                    <td>
-                      <span data-status={userfile.status}>
-                        {userfile.status}
-                      </span>
-                      <span>({format(userfile.createdAt, 'MM/dd HH:mm')})</span>
+                    <td key={userfile.hash} className={'post-result'}>
+                      <div>
+                        <span data-status={userfile.status}>
+                          {userfile.status}
+                        </span>
+                        <span data-visible={isViewTs}>
+                          ({format(userfile.createdAt, 'MM/dd HH:mm')})
+                        </span>
+                      </div>
                     </td>
                   ) : (
-                    <td />
+                    <td key={i} />
                   )
                 )}
               <td>

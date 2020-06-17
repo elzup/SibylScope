@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import Layout from '../components/Layout'
 import ResultTable from '../components/ResultTable'
 import { Result, Task } from '../types'
+import { useLocalStorage } from '../components/useLocalStorage'
 
 const Style = styled.div`
   .tab {
@@ -16,30 +17,18 @@ const Style = styled.div`
 `
 
 const IndexPage = () => {
-  const [result, setResult] = useState<Result | null>(null)
   const [tasks, setTasks] = useState<Task | null>(null)
-  const [selectId, setSelectId] = useState<string>('')
-  const [isNight, setNight] = useState<boolean>(false)
+  const [selectId, setSelectId] = useLocalStorage<string>('select-tab', '')
+  const [isViewTs, setViewTs] = useState<boolean>(false)
 
   useEffect(() => {
     Axios.get<Task>('/tasks.json').then((data) => {
       setTasks(data.data)
     })
-    updateResult()
-    function updateResult() {
-      Axios.get<Result>('/result.json').then((data) => {
-        setResult(data.data)
-      })
-    }
-    const si = setInterval(updateResult, 5 * 60 * 1000)
-    return () => clearInterval(si)
   }, [])
-  if (tasks === null || result == null) {
+  if (tasks === null) {
     return <p>loading</p>
   }
-  const profileEnts = Object.entries(result)
-  profileEnts.sort(() => -1)
-  const pe = result[selectId]
   const profile = tasks.profiles.find((p) => p.id === selectId)
   return (
     <Layout title="Home">
@@ -50,6 +39,7 @@ const IndexPage = () => {
             .map((p) => p.id)
             .map((pid) => (
               <span
+                key={pid}
                 className="tab"
                 data-active={pid === selectId}
                 onClick={() => setSelectId(pid)}
@@ -59,14 +49,17 @@ const IndexPage = () => {
             ))}
         </div>
         <div style={{ float: 'right' }}>
-          <button
-            style={{ border: 'none' }}
-            onClick={() => setNight((v) => !v)}
-          >
-            Light/Dark
-          </button>
+          <label>
+            <input
+              type="checkbox"
+              id="ts_check"
+              style={{ border: 'none' }}
+              onClick={() => setViewTs((v) => !v)}
+            />
+            Timestamp
+          </label>
         </div>
-        {pe && <ResultTable pe={pe} profile={profile} />}
+        {profile && <ResultTable isViewTs={isViewTs} profile={profile} />}
       </Style>
     </Layout>
   )
