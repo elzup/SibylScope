@@ -20,6 +20,7 @@ const IndexPage = () => {
   const [tasks, setTasks] = useState<Task | null>(null)
   const [selectId, setSelectId] = useLocalStorage<string>('select-tab', '')
   const [isViewTs, setViewTs] = useState<boolean>(false)
+  const [isViewOther, setViewOther] = useState<boolean>(false)
 
   useEffect(() => {
     Axios.get<Task>('/tasks.json').then((data) => {
@@ -50,16 +51,21 @@ const IndexPage = () => {
         </div>
         <div style={{ float: 'right' }}>
           <label>
-            <input
-              type="checkbox"
-              id="ts_check"
-              style={{ border: 'none' }}
-              onClick={() => setViewTs((v) => !v)}
-            />
+            <input type="checkbox" onClick={() => setViewOther((v) => !v)} />
+            OtherFile
+          </label>
+          <label>
+            <input type="checkbox" onClick={() => setViewTs((v) => !v)} />
             Timestamp
           </label>
         </div>
-        {profile && <ResultTable isViewTs={isViewTs} profile={profile} />}
+        {profile && (
+          <ResultTable
+            isViewOther={isViewOther}
+            isViewTs={isViewTs}
+            profile={profile}
+          />
+        )}
       </Style>
     </Layout>
   )

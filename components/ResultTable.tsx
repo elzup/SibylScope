@@ -53,11 +53,12 @@ const Style = styled.div`
 type Props = {
   profile: Profile
   isViewTs: boolean
+  isViewOther: boolean
 }
 
 function useProfileResult(profileId: string) {}
 
-function ResultTable({ profile, isViewTs }: Props) {
+function ResultTable({ profile, isViewTs, isViewOther }: Props) {
   const [result, setResult] = useState<ProfileResult | 'loading' | 'none'>(
     'loading'
   )
@@ -84,7 +85,7 @@ function ResultTable({ profile, isViewTs }: Props) {
             {profile.files.map((file) => (
               <th key={file.name}>{file.name}</th>
             ))}
-            <th>other files</th>
+            {isViewOther && <th>other files</th>}
           </tr>
         </thead>
         <tbody>
@@ -109,13 +110,15 @@ function ResultTable({ profile, isViewTs }: Props) {
                     <td key={i} />
                   )
                 )}
-              <td>
-                <div style={{ display: 'grid', width: '20vw' }}>
-                  {user.otherFiles.map((file) => (
-                    <span key={file.name}>{file.name}</span>
-                  ))}
-                </div>
-              </td>
+              {isViewOther && (
+                <td data-visible={isViewOther}>
+                  <div style={{ display: 'grid', width: '20vw' }}>
+                    {user.otherFiles.map((file) => (
+                      <span key={file.name}>{file.name}</span>
+                    ))}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
