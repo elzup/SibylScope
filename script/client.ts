@@ -1,33 +1,47 @@
-import chokidar from 'chokidar'
 import { execSync } from 'child_process'
+import chokidar from 'chokidar'
 import crypto from 'crypto'
 import fs from 'fs'
 import _ from 'lodash'
 import rimraf from 'rimraf'
-import { Profile, Result, Task } from '../types'
+import { Profile, ProfileResult, Result, Task } from '../types'
 
 const workDir = 'vm/workspace'
-const OUT_DIR = process.env.OUT_DIR || './out'
 
 function fileService(outDir: string) {
-  const resultFilePath = `${outDir}/result.json`
   const taskFilePath = `${outDir}/tasks.json`
-  const result = JSON.parse(fs.readFileSync(resultFilePath, 'utf8')) as Result
   const tasks = JSON.parse(fs.readFileSync(taskFilePath, 'utf8')) as Task
+
+  const result: Result = {}
+  tasks.profiles.forEach((profile) => {
+    const resultProfilePath = `${outDir}/result_${profile.id}.json`
+    if (fs.existsSync(resultProfilePath)) {
+      result[profile.id] = JSON.parse(
+        fs.readFileSync(resultProfilePath, 'utf8')
+      ) as ProfileResult
+    } else {
+      result[profile.id] = { users: {} }
+    }
+  })
+  console.log(result)
 
   return {
     tasks,
     result,
-    setResult: () => {
-      fs.writeFileSync(resultFilePath, JSON.stringify(result))
+    setResult: (profileId?: string) => {
+      const ids = profileId ? [profileId] : tasks.profiles.map((p) => p.id)
+      ids.forEach((pid) => {
+        const resultProfilePath = `${outDir}/result_${pid}.json`
+        fs.writeFileSync(resultProfilePath, JSON.stringify(result[pid]))
+      })
     },
   } as const
 }
 
-export function client() {
-  const { tasks, result, setResult } = fileService(OUT_DIR)
+export function client(outDir: string, watchDir: string) {
+  const { tasks, result, setResult } = fileService(outDir)
   const watchAllOption = { ignored: /^\./, persistent: true }
-  const watcher = chokidar.watch(tasks.codeRoot, watchAllOption)
+  const watcher = chokidar.watch(watchDir, watchAllOption)
 
   const profileCheck = {}
   tasks.profiles.forEach((p) => (profileCheck[p.dir] = p))
@@ -65,7 +79,7 @@ function exec(
   path: string,
   result: Result,
   getProfile: (name: string) => Profile | undefined,
-  saveResult: () => void
+  setResult: (profileId: string) => void
 ) {
   const paths = path.split('/')
   const filename = paths.pop()
@@ -80,7 +94,7 @@ function exec(
 
   if (!file) {
     saveOtherFile(result, profile, studentId, filename)
-    saveResult()
+    setResult(profile.id)
     return
   }
   const hash = filehash(path)
@@ -119,6 +133,7 @@ function exec(
     const cmd = buildDockerCommand(`javac ${testFileName} && java ${className}`)
     const status = execSync(cmd, { encoding: 'utf8' }).trim() as 'OK' | 'NG'
     saveUserResult(result, profile, studentId, file.name, status, hash, status)
+    setResult(profile.id)
   } else {
     const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
     const status = execSync(cmd, { encoding: 'utf8' })
@@ -132,6 +147,7 @@ function exec(
       hash,
       status.match(file.expected) ? 'OK' : 'NG'
     )
+    setResult(profile.id)
   }
 }
 

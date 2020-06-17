@@ -3,7 +3,7 @@ node_modules
 
 out/
 public/tasks.json
-public/result.json
+public/result_*.json
 
 vm/
 !vm/.gitkeep
