@@ -96,7 +96,7 @@ function ResultTable({ profile, isViewTs, isViewOther }: Props) {
                 .map((file) => [file, user.results[file.name]] as const)
                 .map(([_file, userfile], i) =>
                   userfile ? (
-                    <td key={userfile.hash} className={'post-result'}>
+                    <td key={i} className={'post-result'}>
                       <div>
                         <span data-status={userfile.status}>
                           {userfile.status}

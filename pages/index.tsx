@@ -19,8 +19,11 @@ const Style = styled.div`
 const IndexPage = () => {
   const [tasks, setTasks] = useState<Task | null>(null)
   const [selectId, setSelectId] = useLocalStorage<string>('select-tab', '')
-  const [isViewTs, setViewTs] = useState<boolean>(false)
-  const [isViewOther, setViewOther] = useState<boolean>(false)
+  const [isViewTs, setViewTs] = useLocalStorage<boolean>('is-view-ts', false)
+  const [isViewOther, setViewOther] = useLocalStorage<boolean>(
+    'is-view-other',
+    false
+  )
 
   useEffect(() => {
     Axios.get<Task>('/tasks.json').then((data) => {
@@ -51,11 +54,19 @@ const IndexPage = () => {
         </div>
         <div style={{ float: 'right' }}>
           <label>
-            <input type="checkbox" onClick={() => setViewOther((v) => !v)} />
+            <input
+              type="checkbox"
+              defaultChecked={isViewOther}
+              onClick={() => setViewOther((v) => !v)}
+            />
             OtherFile
           </label>
           <label>
-            <input type="checkbox" onClick={() => setViewTs((v) => !v)} />
+            <input
+              type="checkbox"
+              defaultChecked={isViewTs}
+              onClick={() => setViewTs((v) => !v)}
+            />
             Timestamp
           </label>
         </div>

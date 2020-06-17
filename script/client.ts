@@ -23,8 +23,6 @@ function fileService(outDir: string) {
       result[profile.id] = { users: {} }
     }
   })
-  console.log(result)
-
   return {
     tasks,
     result,
