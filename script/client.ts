@@ -30,6 +30,7 @@ function fileService(outDir: string) {
       const ids = profileId ? [profileId] : tasks.profiles.map((p) => p.id)
       ids.forEach((pid) => {
         const resultProfilePath = `${outDir}/result_${pid}.json`
+
         fs.writeFileSync(resultProfilePath, JSON.stringify(result[pid]))
       })
     },
@@ -88,7 +89,9 @@ function exec(
 
   if (!profile) return
 
-  const file = profile.files.find((f) => new RegExp(f.regex).exec(filename))
+  const file = profile.files.find((f) =>
+    new RegExp(f.regex || f.name).exec(filename)
+  )
 
   if (!file) {
     saveOtherFile(result, profile, studentId, filename)
@@ -108,12 +111,9 @@ function exec(
 
   const changed = hash !== oldHash
   if (!changed) return console.log('skip')
-  // console.log(profileDir)
-  // console.log(filename)
-  // console.log({ hash, oldHash })
   if (file.case === 'check') {
     saveUserResult(result, profile, studentId, file.name, '', hash, 'OK')
-
+    setResult(profile.id)
     return
   }
 
@@ -175,7 +175,7 @@ function saveUserResult(
   hash: string,
   status: 'OK' | 'NG'
 ) {
-  console.log(`log: ${profile}, ${studentId}, ${name}, ${text}`)
+  console.log(`log: ${profile.id}, ${studentId}, ${name}, ${text}`)
 
   initializeUser(result, profile.id, studentId)
 

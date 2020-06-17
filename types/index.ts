@@ -20,7 +20,7 @@ export type Result = {
 
 export type ProfileFile = {
   name: string
-  regex: string
+  regex?: string
 } & (
   | {
       case: 'check'
