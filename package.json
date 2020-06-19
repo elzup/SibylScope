@@ -9,7 +9,7 @@
     "type-check": "tsc",
     "serve": "ts-node --project tsconfig.node.json script/watch.ts",
     "test:serve": "OUT_DIR=script/tests/resultRoot jest script/tests/index.test.ts",
-    "serve:dev": "OUT_DIR=public ts-node --project tsconfig.node.json script/watch.ts"
+    "serve:dev": "ts-node --project tsconfig.node.json script/watch.ts"
   },
   "dependencies": {
     "axios": "^0.19.2",

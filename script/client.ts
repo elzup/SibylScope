@@ -110,7 +110,9 @@ function exec(
   if (!profile) return
 
   const file = profile.files.find((f) =>
-    new RegExp(f.regex || f.name).exec(filePath + filename)
+    new RegExp((f.regex || f.name).toLowerCase()).exec(
+      (filePath + filename).toLowerCase()
+    )
   )
 
   if (!file) {
@@ -132,15 +134,7 @@ function exec(
   const changed = hash !== oldHash
   if (!changed) return console.log('skip')
   if (file.case === 'check') {
-    saveUserResult(
-      result,
-      profile,
-      studentId,
-      filePath + file.name,
-      '',
-      hash,
-      'OK'
-    )
+    saveUserResult(result, profile, studentId, file.name, '', hash, 'OK')
     setResult(profile.id)
     return
   }
@@ -148,6 +142,8 @@ function exec(
   rimraf.sync(workDir)
   fs.mkdirSync(workDir)
   fs.copyFileSync(path, workDir + '/' + filename)
+
+  execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
 
   if (file.case === 'load-test') {
     // copy

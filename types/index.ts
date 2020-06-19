@@ -37,6 +37,7 @@ export type ProfileFile = {
 )
 export type Profile = {
   id: string
+  enabled: boolean
   dir: string
   files: ProfileFile[]
 }

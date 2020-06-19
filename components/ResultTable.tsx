@@ -18,7 +18,7 @@ const Style = styled.div`
     td {
       border-left: 1px solid #c5c5c5;
       border-top: 1px solid #c5c5c5;
-      width: 10vw;
+      min-width: 80px;
       text-align: center;
       span {
         font-size: 0.8rem;
