@@ -56,8 +56,6 @@ type Props = {
   isViewOther: boolean
 }
 
-function useProfileResult(profileId: string) {}
-
 function ResultTable({ profile, isViewTs, isViewOther }: Props) {
   const [result, setResult] = useState<ProfileResult | 'loading' | 'none'>(
     'loading'

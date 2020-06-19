@@ -49,7 +49,8 @@ export function client(outDir: string, watchDir: string) {
       path,
       result,
       (profileId: string) => profileCheck[profileId],
-      setResult
+      setResult,
+      watchDir
     )
 
   return {
@@ -74,27 +75,46 @@ export function client(outDir: string, watchDir: string) {
   }
 }
 
+function parsePath(path: string, watchDir) {
+  const paths = path.replace(watchDir, '').split('/')
+
+  paths.shift()
+  const profileDir = paths.shift()
+  const studentId = paths.shift()
+  const filename = paths.pop()
+
+  return {
+    filename,
+    studentId,
+    profileDir,
+    filePath: paths.join('/') + '/',
+  } as const
+}
+
 function exec(
   path: string,
   result: Result,
   getProfile: (name: string) => Profile | undefined,
-  setResult: (profileId: string) => void
+  setResult: (profileId: string) => void,
+  watchDir: string
 ) {
-  const paths = path.split('/')
-  const filename = paths.pop()
-  const studentId = paths.pop()
-  const profileDir = paths.pop()
+  const { filename, studentId, profileDir, filePath } = parsePath(
+    path,
+    watchDir
+  )
+  // console.log({ filename, studentId, profileDir, filePath })
+
   if (!filename || !studentId || !profileDir) return
   const profile = getProfile(profileDir)
 
   if (!profile) return
 
   const file = profile.files.find((f) =>
-    new RegExp(f.regex || f.name).exec(filename)
+    new RegExp(f.regex || f.name).exec(filePath + filename)
   )
 
   if (!file) {
-    saveOtherFile(result, profile, studentId, filename)
+    saveOtherFile(result, profile, studentId, filePath + filename)
     setResult(profile.id)
     return
   }
@@ -105,14 +125,22 @@ function exec(
     'users',
     studentId,
     'results',
-    file.name,
+    filePath + file.name,
     'hash',
   ])
 
   const changed = hash !== oldHash
   if (!changed) return console.log('skip')
   if (file.case === 'check') {
-    saveUserResult(result, profile, studentId, file.name, '', hash, 'OK')
+    saveUserResult(
+      result,
+      profile,
+      studentId,
+      filePath + file.name,
+      '',
+      hash,
+      'OK'
+    )
     setResult(profile.id)
     return
   }
@@ -134,16 +162,16 @@ function exec(
     setResult(profile.id)
   } else {
     const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
-    const status = execSync(cmd, { encoding: 'utf8' })
+    const resultText = execSync(cmd, { encoding: 'utf8' })
 
     saveUserResult(
       result,
       profile,
       studentId,
       file.name,
-      status,
+      resultText,
       hash,
-      status.match(file.expected) ? 'OK' : 'NG'
+      resultText.trim().match(file.expected) ? 'OK' : 'NG'
     )
     setResult(profile.id)
   }
