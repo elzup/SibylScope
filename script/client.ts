@@ -43,7 +43,9 @@ export function client(outDir: string, watchDir: string) {
   const watcher = chokidar.watch(watchDir, watchAllOption)
 
   const profileCheck = {}
-  tasks.profiles.forEach((p) => (profileCheck[p.dir] = p))
+  tasks.profiles
+    .filter((p) => p.enabled)
+    .forEach((p) => (profileCheck[p.dir] = p))
   const execEx = (path: string) =>
     exec(
       path,
