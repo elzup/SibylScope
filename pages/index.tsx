@@ -40,6 +40,7 @@ const IndexPage = () => {
         <h1>課題View</h1>
         <div>
           {tasks.profiles
+            .filter((p) => p.enabled)
             .map((p) => p.id)
             .map((pid) => (
               <span
