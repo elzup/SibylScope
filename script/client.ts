@@ -92,6 +92,7 @@ function parsePath(path: string, watchDir) {
     filePath: paths.join('/') + '/',
   } as const
 }
+const popFilename = (path: string) => path.split('/').pop() || ''
 
 function exec(
   path: string,
@@ -138,19 +139,18 @@ function exec(
   if (file.case === 'check') {
     saveUserResult(result, profile, studentId, file.name, '', hash, 'OK')
     setResult(profile.id)
-    return
   }
 
   rimraf.sync(workDir)
   fs.mkdirSync(workDir)
-  fs.copyFileSync(path, workDir + '/' + filename)
+  const workFilePath = workDir + '/' + filename
+  fs.copyFileSync(path, workFilePath)
 
   execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
 
   if (file.case === 'load-test') {
     // copy
-    const tfs = file.testFile.split('/')
-    const testFileName = tfs.pop() || ''
+    const testFileName = popFilename(file.testFile)
     const testFilePath = `${workDir}/${testFileName}`
     fs.copyFileSync(file.testFile, testFilePath)
     const className = testFileName.split('.')[0] || ''
@@ -158,7 +158,7 @@ function exec(
     const status = execSync(cmd, { encoding: 'utf8' }).trim() as 'OK' | 'NG'
     saveUserResult(result, profile, studentId, file.name, status, hash, status)
     setResult(profile.id)
-  } else {
+  } else if (file.case === 'run-test') {
     const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
     const resultText = execSync(cmd, { encoding: 'utf8' })
 
@@ -173,6 +173,15 @@ function exec(
     )
     setResult(profile.id)
   }
+  // if (file.diffFile) {
+  //   const diffFileName = popFilename(file.diffFile)
+  //   const diffFilePath = `${workDir}/${diffFileName}`
+  //   fs.copyFileSync(file.diffFile, diffFilePath)
+  //   const cmd = buildDockerCommand(`diff ${diffFilePath} ${workFilePath}`)
+  //   const result = execSync(cmd, { encoding: 'utf8' })
+  //   saveUserResult(result, profile, studentId, file.name, status, hash, status)
+  //   setResult(profile.id)
+  // }
 }
 
 function initializeUser(result: Result, profileId: string, studentId: string) {
@@ -201,7 +210,7 @@ function saveUserResult(
   hash: string,
   status: 'OK' | 'NG'
 ) {
-  console.log(`log: ${profile.id}, ${studentId}, ${name}, ${text}`)
+  console.log(`log: ${profile.id}, ${studentId}, ${name}`)
 
   initializeUser(result, profile.id, studentId)
 
