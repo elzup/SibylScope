@@ -1,0 +1,16 @@
+{
+  "profiles": [{
+    "id": "Chap4",
+    "dir": "Chapter4",
+    "files": [{
+      "name": "result.txt"
+    }, {
+      "name": "Calc.java",
+      "plugins": {
+        "java-code-test": {
+          "path": "tester/CalcTest.java"
+        }
+      }
+    }]
+  }]
+}

@@ -62,7 +62,7 @@ export function client(outDir: string, watchDir: string) {
       }
       resetOtherFiles(result)
       setResult()
-      console.log(`watch start "${tasks.codeRoot}"`)
+      console.log(`watch start "${watchDir}"`)
       watcher
         .on('add', execEx)
         .on('change', execEx)
@@ -114,6 +114,7 @@ function exec(
 
   const file = profile.files.find((f) =>
     new RegExp((f.regex || f.name).toLowerCase()).exec(
+      // NOTE: .file も直で regex にしている
       (filePath + filename).toLowerCase()
     )
   )
