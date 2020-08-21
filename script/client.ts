@@ -1,17 +1,21 @@
-import { execSync } from 'child_process'
 import chokidar from 'chokidar'
 import crypto from 'crypto'
 import fs from 'fs'
 import _ from 'lodash'
-import rimraf from 'rimraf'
-import { Profile, ProfileResult, Result, Task } from '../types'
+import {
+  Checks,
+  Plugin,
+  Profile,
+  ProfileResult,
+  Result,
+  Task,
+  FileInfo,
+  ProfileFile,
+} from '../types'
+import { loadPlugins } from './loadPlugins'
+import { loadTasks } from './loadTasks'
 
-const workDir = 'vm/workspace'
-
-function fileService(outDir: string) {
-  const taskFilePath = `${outDir}/tasks.json`
-  const tasks = JSON.parse(fs.readFileSync(taskFilePath, 'utf8')) as Task
-
+function fileService(outDir: string, tasks: Task) {
   const result: Result = {}
   tasks.profiles.forEach((profile) => {
     const resultProfilePath = `${outDir}/result_${profile.id}.json`
@@ -24,7 +28,6 @@ function fileService(outDir: string) {
     }
   })
   return {
-    tasks,
     result,
     setResult: (profileId?: string) => {
       const ids = profileId ? [profileId] : tasks.profiles.map((p) => p.id)
@@ -37,8 +40,10 @@ function fileService(outDir: string) {
   } as const
 }
 
-export function client(outDir: string, watchDir: string) {
-  const { tasks, result, setResult } = fileService(outDir)
+export function client(outDir: string, watchDir: string, pluginDir: string) {
+  const tasks = loadTasks(`${outDir}/tasks.json`)
+  const { result, setResult } = fileService(outDir, tasks)
+  const plugins = loadPlugins(pluginDir)
   const watchAllOption = { ignored: /^\./, persistent: true }
   const watcher = chokidar.watch(watchDir, watchAllOption)
 
@@ -46,20 +51,52 @@ export function client(outDir: string, watchDir: string) {
   tasks.profiles
     .filter((p) => p.enabled)
     .forEach((p) => (profileCheck[p.dir] = p))
-  const execEx = (path: string) =>
-    exec(
-      path,
-      result,
-      (profileId: string) => profileCheck[profileId],
-      setResult,
-      watchDir
+  const execEx = (path: string) => {
+    const fileInfo = parsePath(path, watchDir)
+    const { filename, studentId, profileDir, filePath } = fileInfo
+
+    const profile = profileCheck[profileDir]
+    if (!filename || !studentId || !profileDir || !profile) {
+      return
+    }
+
+    const file = profile.files.find((f) =>
+      // NOTE: .file も直で regex にしている
+      new RegExp((f.regex || f.name).toLowerCase()).exec(
+        (filePath + filename).toLowerCase()
+      )
     )
 
+    if (!file) {
+      saveOtherFile(result, profile, studentId, filePath + filename)
+      setResult(profile.id)
+      return
+    }
+    const hash = filehash(path)
+
+    const oldHash = _.get(
+      result,
+      [profile.id, 'users', studentId, 'results', filePath + file.name, 'hash'],
+      ''
+    ) as string
+
+    const changed = hash !== oldHash
+    if (!changed) {
+      // no change
+      return
+    }
+
+    const res = exec(fileInfo, file, plugins)
+
+    saveUserResult(result, profile, fileInfo, file.name, hash, res.checks)
+    // saveUserResult(result, profile, studentId, file.name, status, hash, status)
+    setResult(profile.id)
+  }
   return {
     start: () => {
-      if (!checkDockerRunning()) {
-        throw new Error('java docker not running')
-      }
+      // if (!checkDockerRunning()) {
+      //   throw new Error('java docker not running')
+      // }
       resetOtherFiles(result)
       setResult()
       console.log(`watch start "${watchDir}"`)
@@ -77,7 +114,7 @@ export function client(outDir: string, watchDir: string) {
   }
 }
 
-function parsePath(path: string, watchDir) {
+function parsePath(path: string, watchDir): FileInfo {
   const paths = path.replace(watchDir, '').split('/')
 
   paths.shift()
@@ -86,103 +123,29 @@ function parsePath(path: string, watchDir) {
   const filename = paths.pop()
 
   return {
+    path,
     filename,
     studentId,
     profileDir,
     filePath: paths.join('/') + '/',
-  } as const
+  }
 }
-const popFilename = (path: string) => path.split('/').pop() || ''
 
+type ExecResult = {
+  checks: Checks
+}
 function exec(
-  path: string,
-  result: Result,
-  getProfile: (name: string) => Profile | undefined,
-  setResult: (profileId: string) => void,
-  watchDir: string
-) {
-  const { filename, studentId, profileDir, filePath } = parsePath(
-    path,
-    watchDir
-  )
-  // console.log({ filename, studentId, profileDir, filePath })
-
-  if (!filename || !studentId || !profileDir) return
-  const profile = getProfile(profileDir)
-
-  if (!profile) return
-
-  const file = profile.files.find((f) =>
-    new RegExp((f.regex || f.name).toLowerCase()).exec(
-      // NOTE: .file も直で regex にしている
-      (filePath + filename).toLowerCase()
-    )
-  )
-
-  if (!file) {
-    saveOtherFile(result, profile, studentId, filePath + filename)
-    setResult(profile.id)
-    return
-  }
-  const hash = filehash(path)
-
-  const oldHash = _.get(result, [
-    profile.id,
-    'users',
-    studentId,
-    'results',
-    filePath + file.name,
-    'hash',
-  ])
-
-  const changed = hash !== oldHash
-  if (!changed) return console.log('skip')
-  if (file.case === 'check') {
-    saveUserResult(result, profile, studentId, file.name, '', hash, 'OK')
-    setResult(profile.id)
-  }
-
-  rimraf.sync(workDir)
-  fs.mkdirSync(workDir)
-  const workFilePath = workDir + '/' + filename
-  fs.copyFileSync(path, workFilePath)
-
-  execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
-
-  if (file.case === 'load-test') {
-    // copy
-    const testFileName = popFilename(file.testFile)
-    const testFilePath = `${workDir}/${testFileName}`
-    fs.copyFileSync(file.testFile, testFilePath)
-    const className = testFileName.split('.')[0] || ''
-    const cmd = buildDockerCommand(`javac ${testFileName} && java ${className}`)
-    const status = execSync(cmd, { encoding: 'utf8' }).trim() as 'OK' | 'NG'
-    saveUserResult(result, profile, studentId, file.name, status, hash, status)
-    setResult(profile.id)
-  } else if (file.case === 'run-test') {
-    const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
-    const resultText = execSync(cmd, { encoding: 'utf8' })
-
-    saveUserResult(
-      result,
-      profile,
-      studentId,
-      file.name,
-      resultText,
-      hash,
-      resultText.trim().match(file.expected) ? 'OK' : 'NG'
-    )
-    setResult(profile.id)
-  }
-  // if (file.diffFile) {
-  //   const diffFileName = popFilename(file.diffFile)
-  //   const diffFilePath = `${workDir}/${diffFileName}`
-  //   fs.copyFileSync(file.diffFile, diffFilePath)
-  //   const cmd = buildDockerCommand(`diff ${diffFilePath} ${workFilePath}`)
-  //   const result = execSync(cmd, { encoding: 'utf8' })
-  //   saveUserResult(result, profile, studentId, file.name, status, hash, status)
-  //   setResult(profile.id)
-  // }
+  fileInfo: FileInfo,
+  file: ProfileFile,
+  plugins: Record<string, Plugin>
+): ExecResult {
+  const checks: Checks = {}
+  checks['exists'] = { status: 'OK', text: 'OK' }
+  Object.entries(file.plugins || {}).forEach(([pluginId, pluginArg]) => {
+    if (!plugins[pluginId]) return
+    checks[pluginId] = plugins[pluginId].func(fileInfo, pluginArg)
+  })
+  return { checks }
 }
 
 function initializeUser(result: Result, profileId: string, studentId: string) {
@@ -205,11 +168,10 @@ function saveOtherFile(
 function saveUserResult(
   result: Result,
   profile: Profile,
-  studentId: string,
+  { studentId }: FileInfo,
   name: string,
-  text: string,
   hash: string,
-  status: 'OK' | 'NG'
+  checks: Checks
 ) {
   console.log(`log: ${profile.id}, ${studentId}, ${name}`)
 
@@ -220,16 +182,14 @@ function saveUserResult(
       createdAt: Date.now(),
       updatedAt: Date.now(),
       hash,
-      text,
-      status,
+      checks,
     }
   } else {
     result[profile.id].users[studentId].results[name] = {
       ...result[profile.id].users[studentId].results[name],
       updatedAt: Date.now(),
       hash,
-      text,
-      status,
+      checks,
     }
   }
 }
@@ -246,21 +206,4 @@ function filehash(path) {
   const hash = crypto.createHash('md5')
   hash.update(fs.readFileSync(path))
   return hash.digest('base64')
-}
-
-function buildDockerCommand(command) {
-  return `docker exec -i java /bin/bash -c "cd /root/workspace && ${command}"`
-}
-
-function checkDockerRunning() {
-  try {
-    return (
-      execSync(`docker exec -i java /bin/bash -c "echo OK"`, {
-        encoding: 'utf8',
-      }).trim() === 'OK'
-    )
-  } catch (e) {
-    // console.error(e)
-    return false
-  }
 }

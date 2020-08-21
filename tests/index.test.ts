@@ -19,7 +19,7 @@ beforeAll(() => {
 jest.setTimeout(20000) // in milliseconds
 
 test('run java task', async () => {
-  const cli = client(resultDir, codeDir)
+  const cli = client(resultDir, codeDir, 'plugins')
   const watcher = cli.start()
 
   fs.copyFileSync(

@@ -1,10 +1,12 @@
 import { readdirSync } from 'fs'
+import { Plugin } from '../types'
 
-export function loadPlugins(path: string) {
+export function loadPlugins(path: string): Record<string, Plugin> {
   const pluginIds = readdirSync(path)
-  const plugins = pluginIds.map((pid) => {
+  const plugins: Record<string, Plugin> = {}
+  pluginIds.forEach((pid) => {
     const func = require(`../${path}/${pid}/index.ts`).default
-    return { id: pid, func }
+    plugins[pid] = { id: pid, func }
   })
 
   return plugins

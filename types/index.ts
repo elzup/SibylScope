@@ -1,3 +1,8 @@
+export type Check = {
+  status: 'OK' | 'CL' | 'NG'
+  text: string
+}
+export type Checks = { [id: string]: Check }
 export type ProfileResult = {
   users: {
     [userId: string]: {
@@ -6,8 +11,7 @@ export type ProfileResult = {
           createdAt: number
           updatedAt: number
           hash: string
-          text: string
-          status: 'OK' | 'NG'
+          checks: { [id: string]: Check }
         }
       }
       otherFiles: { name: string }[]
@@ -18,10 +22,15 @@ export type Result = {
   [profileId: string]: ProfileResult
 }
 
+export type Plugin = {
+  id: string
+  func: (fileInfo: FileInfo, arg: unknown) => Check
+}
+
 export type ProfileFile = {
   name: string
   regex?: string
-  plugins: {
+  plugins?: {
     [pluginId: string]: unknown
   }
   // diffFile?: string
@@ -41,4 +50,12 @@ export type Profile = {
 
 export type Task = {
   profiles: Profile[]
+}
+
+export type FileInfo = {
+  filename: string
+  studentId: string
+  filePath: string
+  path: string
+  profileDir: string
 }
