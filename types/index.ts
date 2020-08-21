@@ -21,21 +21,17 @@ export type Result = {
 export type ProfileFile = {
   name: string
   regex?: string
-  diffFile?: string
-} & (
-  | {
-      case: 'check'
-    }
-  | {
-      case: 'load-test'
-      testFile: string
-    }
-  | {
-      case: 'run-test'
-      args?: string
-      expected: string
-    }
-)
+  plugins: {
+    [pluginId: string]: unknown
+  }
+  // diffFile?: string
+  // loadTestFile: string
+  // expected?: {
+  //   args?: string
+  //   out: string
+  // }
+}
+
 export type Profile = {
   id: string
   enabled: boolean
@@ -44,6 +40,5 @@ export type Profile = {
 }
 
 export type Task = {
-  codeRoot: string
   profiles: Profile[]
 }
