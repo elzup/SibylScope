@@ -19,6 +19,5 @@
     "strict": true,
     "target": "es2018"
   },
-  "exclude": ["node_modules", "script"],
-  "include": ["script/watch.ts", "script/client.ts"]
+  "exclude": ["node_modules", "pages", "components"],
 }
