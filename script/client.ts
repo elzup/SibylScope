@@ -53,6 +53,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
     .forEach((p) => (profileCheck[p.dir] = p))
   const execEx = (path: string) => {
     const fileInfo = parsePath(path, watchDir)
+    if (!fileInfo) return
     const { filename, studentId, profileDir, filePath } = fileInfo
 
     const profile = profileCheck[profileDir]
@@ -114,13 +115,14 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
   }
 }
 
-function parsePath(path: string, watchDir): FileInfo {
+function parsePath(path: string, watchDir): FileInfo | false {
   const paths = path.replace(watchDir, '').split('/')
 
   paths.shift()
   const profileDir = paths.shift()
   const studentId = paths.shift()
   const filename = paths.pop()
+  if (!filename || !studentId || !profileDir) return false
 
   return {
     path,

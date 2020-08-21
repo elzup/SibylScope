@@ -15,7 +15,7 @@ const isConfig = (config: unknown): config is Config => {
 
 export default function main(fileInfo: FileInfo, config: unknown): Check {
   if (!isConfig(config)) {
-    return
+    throw new Error('invalid profile config, plugin arg.')
     // NOTE: throw
   }
   const { path, filename } = fileInfo
