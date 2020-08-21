@@ -19,7 +19,7 @@ export default function main(fileInfo: FileInfo, config: unknown): Check {
     // NOTE: throw
   }
   const { path, filename } = fileInfo
-  const workDir = 'vm/workspace'
+  const workDir = process.cwd() + '/vm/workspace'
 
   rimraf.sync(workDir)
   mkdirSync(workDir)
@@ -34,7 +34,6 @@ export default function main(fileInfo: FileInfo, config: unknown): Check {
   copyFileSync(config.path, testFilePath)
   const className = testFileName.split('.')[0] || ''
   const cmd = buildDockerCommand(`javac ${testFileName} && java ${className}`)
-  const status = execSync(cmd, { encoding: 'utf8' }).trim() as 'OK' | 'NG'
   // saveUserResult(result, profile, studentId, file.name, status, hash, status)
   // setResult(profile.id)
   const text = execSync(cmd, { encoding: 'utf8' }).trim()

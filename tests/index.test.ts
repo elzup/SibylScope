@@ -26,12 +26,37 @@ test('run java task', async () => {
     __dirname + '/sample/Calc.java',
     codeDir + '/Chapter4/user-a/Calc.java'
   )
+  await sleep(5000)
   const result = JSON.parse(
     fs.readFileSync(resultDir + '/result_Chap4.json', 'utf-8')
   )
-  await sleep(10000)
 
-  expect(result).toMatchInlineSnapshot(`Object {}`)
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "users": Object {
+        "user-a": Object {
+          "otherFiles": Array [],
+          "results": Object {
+            "Calc.java": Object {
+              "checks": Object {
+                "exists": Object {
+                  "status": "OK",
+                  "text": "OK",
+                },
+                "java-code-test": Object {
+                  "status": "OK",
+                  "text": "OK",
+                },
+              },
+              "createdAt": 1598004248276,
+              "hash": "KMB5t+1FVh/kJrg8G60UEw==",
+              "updatedAt": 1598004284400,
+            },
+          },
+        },
+      },
+    }
+  `)
   watcher.close()
 })
 

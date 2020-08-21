@@ -42,6 +42,7 @@ function fileService(outDir: string, tasks: Task) {
 
 export function client(outDir: string, watchDir: string, pluginDir: string) {
   const tasks = loadTasks(`${outDir}/tasks.json`)
+  console.log(tasks.profiles)
   const { result, setResult } = fileService(outDir, tasks)
   const plugins = loadPlugins(pluginDir)
   const watchAllOption = { ignored: /^\./, persistent: true }
@@ -56,6 +57,8 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
     if (!fileInfo) return
     const { filename, studentId, profileDir, filePath } = fileInfo
 
+    console.log({ profileCheck })
+    console.log({ fileInfo })
     const profile = profileCheck[profileDir]
     if (!filename || !studentId || !profileDir || !profile) {
       return
@@ -67,6 +70,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
         (filePath + filename).toLowerCase()
       )
     )
+    console.log({ profile })
 
     if (!file) {
       saveOtherFile(result, profile, studentId, filePath + filename)
