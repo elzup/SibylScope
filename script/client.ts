@@ -55,12 +55,12 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
   const execEx = (path: string) => {
     const fileInfo = parsePath(path, watchDir)
     if (!fileInfo) return
-    const { filename, studentId, profileDir, filePath } = fileInfo
+    const { filename, studentId, profileId, filePath } = fileInfo
 
     console.log({ profileCheck })
     console.log({ fileInfo })
-    const profile = profileCheck[profileDir]
-    if (!filename || !studentId || !profileDir || !profile) {
+    const profile = profileCheck[profileId]
+    if (!filename || !studentId || !profileId || !profile) {
       return
     }
 
@@ -93,7 +93,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
 
     const res = exec(fileInfo, file, plugins)
 
-    saveUserResult(result, profile, fileInfo, file.name, hash, res.checks)
+    saveUserResult(result, fileInfo, file.name, hash, res.checks)
     // saveUserResult(result, profile, studentId, file.name, status, hash, status)
     setResult(profile.id)
   }
@@ -123,16 +123,16 @@ function parsePath(path: string, watchDir): FileInfo | false {
   const paths = path.replace(watchDir, '').split('/')
 
   paths.shift()
-  const profileDir = paths.shift()
+  const profileId = paths.shift()
   const studentId = paths.shift()
   const filename = paths.pop()
-  if (!filename || !studentId || !profileDir) return false
+  if (!filename || !studentId || !profileId) return false
 
   return {
     path,
     filename,
     studentId,
-    profileDir,
+    profileId,
     filePath: paths.join('/') + '/',
   }
 }
@@ -173,26 +173,25 @@ function saveOtherFile(
 
 function saveUserResult(
   result: Result,
-  profile: Profile,
-  { studentId }: FileInfo,
+  { studentId, profileId }: FileInfo,
   name: string,
   hash: string,
   checks: Checks
 ) {
-  console.log(`log: ${profile.id}, ${studentId}, ${name}`)
+  console.log(`log: ${profileId}, ${studentId}, ${name}`)
 
-  initializeUser(result, profile.id, studentId)
+  initializeUser(result, profileId, studentId)
 
-  if (!result[profile.id].users[studentId].results[name]) {
-    result[profile.id].users[studentId].results[name] = {
+  if (!result[profileId].users[studentId].results[name]) {
+    result[profileId].users[studentId].results[name] = {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       hash,
       checks,
     }
   } else {
-    result[profile.id].users[studentId].results[name] = {
-      ...result[profile.id].users[studentId].results[name],
+    result[profileId].users[studentId].results[name] = {
+      ...result[profileId].users[studentId].results[name],
       updatedAt: Date.now(),
       hash,
       checks,

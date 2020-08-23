@@ -57,5 +57,5 @@ export type FileInfo = {
   studentId: string
   filePath: string
   path: string
-  profileDir: string
+  profileId: string
 }
