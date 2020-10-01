@@ -27,8 +27,57 @@ function fileService(outDir: string, tasks: Task) {
       result[profile.id] = { users: {} }
     }
   })
+  function initializeUser(profileId: string, studentId: string) {
+    if (!result[profileId]) result[profileId] = { users: {} }
+    if (!result[profileId].users[studentId])
+      result[profileId].users[studentId] = { results: {}, otherFiles: [] }
+  }
+
+  function saveOtherFile(profile: Profile, studentId: string, name: string) {
+    initializeUser(profile.id, studentId)
+    result[profile.id].users[studentId].otherFiles.push({ name })
+  }
+
+  function saveUserResult(
+    { studentId, profileId }: FileInfo,
+    name: string,
+    hash: string,
+    checks: Checks
+  ) {
+    console.log(`log: ${profileId}, ${studentId}, ${name}`)
+    initializeUser(profileId, studentId)
+
+    const now = Date.now()
+    if (!result[profileId].users[studentId].results[name]) {
+      result[profileId].users[studentId].results[name] = {
+        createdAt: now,
+        updatedAt: now,
+        hash,
+        checks,
+      }
+    } else {
+      result[profileId].users[studentId].results[name] = {
+        ...result[profileId].users[studentId].results[name],
+        updatedAt: now,
+        hash,
+        checks,
+      }
+    }
+  }
+
+  function resetOtherFiles() {
+    Object.entries(result).map(([pid, pr]) => {
+      Object.entries(pr.users).map(([uk, user]) => {
+        result[pid].users[uk].otherFiles = []
+      })
+    })
+  }
+  resetOtherFiles()
+
   return {
     result,
+    saveUserResult,
+    saveOtherFile,
     setResult: (profileId?: string) => {
       const ids = profileId ? [profileId] : tasks.profiles.map((p) => p.id)
       ids.forEach((pid) => {
@@ -43,7 +92,10 @@ function fileService(outDir: string, tasks: Task) {
 export function client(outDir: string, watchDir: string, pluginDir: string) {
   const tasks = loadTasks(`${outDir}/tasks.json`)
   console.log(tasks.profiles)
-  const { result, setResult } = fileService(outDir, tasks)
+  const { result, setResult, saveUserResult, saveOtherFile } = fileService(
+    outDir,
+    tasks
+  )
   const plugins = loadPlugins(pluginDir)
   console.log('plugins')
   console.log(plugins)
@@ -73,7 +125,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
     )
 
     if (!file) {
-      saveOtherFile(result, profile, studentId, filePath + filename)
+      saveOtherFile(profile, studentId, filePath + filename)
       setResult(profile.id)
       return
     }
@@ -93,7 +145,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
 
     const res = exec(fileInfo, file, plugins)
 
-    saveUserResult(result, fileInfo, file.name, hash, res.checks)
+    saveUserResult(fileInfo, file.name, hash, res.checks)
     // saveUserResult(result, profile, studentId, file.name, status, hash, status)
     setResult(profile.id)
   }
@@ -102,7 +154,6 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
       // if (!checkDockerRunning()) {
       //   throw new Error('java docker not running')
       // }
-      resetOtherFiles(result)
       setResult()
       console.log(`watch start "${watchDir}"`)
       watcher
@@ -152,59 +203,6 @@ function exec(
     checks[pluginId] = plugins[pluginId].func(fileInfo, pluginArg)
   })
   return { checks }
-}
-
-function initializeUser(result: Result, profileId: string, studentId: string) {
-  if (!result[profileId]) result[profileId] = { users: {} }
-  if (!result[profileId].users[studentId])
-    result[profileId].users[studentId] = { results: {}, otherFiles: [] }
-}
-
-function saveOtherFile(
-  results: Result,
-  profile: Profile,
-  studentId: string,
-  name: string
-) {
-  initializeUser(results, profile.id, studentId)
-
-  results[profile.id].users[studentId].otherFiles.push({ name })
-}
-
-function saveUserResult(
-  result: Result,
-  { studentId, profileId }: FileInfo,
-  name: string,
-  hash: string,
-  checks: Checks
-) {
-  console.log(`log: ${profileId}, ${studentId}, ${name}`)
-
-  initializeUser(result, profileId, studentId)
-
-  if (!result[profileId].users[studentId].results[name]) {
-    result[profileId].users[studentId].results[name] = {
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      hash,
-      checks,
-    }
-  } else {
-    result[profileId].users[studentId].results[name] = {
-      ...result[profileId].users[studentId].results[name],
-      updatedAt: Date.now(),
-      hash,
-      checks,
-    }
-  }
-}
-
-function resetOtherFiles(result: Result) {
-  Object.entries(result).map(([key, pr]) => {
-    Object.entries(pr.users).map(([key, user]) => {
-      user.otherFiles = []
-    })
-  })
 }
 
 function filehash(path) {
