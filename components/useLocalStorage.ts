@@ -6,7 +6,8 @@ export function useLocalStorage<T = unknown>(
 ): [T, Dispatch<SetStateAction<T>>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
-      const item = window.localStorage.getItem(key)
+      const item =
+        typeof window !== 'undefined' ? window.localStorage.getItem(key) : '{}'
 
       return item ? (JSON.parse(item) as T) : initialValue
     } catch (error) {
