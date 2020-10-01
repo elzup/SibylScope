@@ -45,6 +45,9 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
   console.log(tasks.profiles)
   const { result, setResult } = fileService(outDir, tasks)
   const plugins = loadPlugins(pluginDir)
+  console.log('plugins')
+  console.log(plugins)
+
   const watchAllOption = { ignored: /^\./, persistent: true }
   const watcher = chokidar.watch(watchDir, watchAllOption)
 
@@ -57,8 +60,6 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
     if (!fileInfo) return
     const { filename, studentId, profileId, filePath } = fileInfo
 
-    console.log({ profileCheck })
-    console.log({ fileInfo })
     const profile = profileCheck[profileId]
     if (!filename || !studentId || !profileId || !profile) {
       return
@@ -70,7 +71,6 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
         (filePath + filename).toLowerCase()
       )
     )
-    console.log({ profile })
 
     if (!file) {
       saveOtherFile(result, profile, studentId, filePath + filename)
@@ -122,7 +122,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
 function parsePath(path: string, watchDir): FileInfo | false {
   const paths = path.replace(watchDir, '').split('/')
 
-  paths.shift()
+  // paths.shift()
   const profileId = paths.shift()
   const studentId = paths.shift()
   const filename = paths.pop()

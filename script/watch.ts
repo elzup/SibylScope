@@ -5,5 +5,5 @@ const watchPath = process.argv[3]
 if (!outDir || !watchPath) {
   throw new Error('ts-node watch.ts {output path} {watch path}')
 } else {
-  client(outDir, watchPath).start()
+  client(outDir, watchPath, 'plugins').start()
 }
