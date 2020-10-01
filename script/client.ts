@@ -39,7 +39,8 @@ function fileService(outDir: string, tasks: Task) {
   }
 
   function saveUserResult(
-    { studentId, profileId }: FileInfo,
+    profileId: string,
+    { studentId }: FileInfo,
     name: string,
     hash: string,
     checks: Checks
@@ -64,6 +65,14 @@ function fileService(outDir: string, tasks: Task) {
       }
     }
   }
+  function setResult(profileId?: string) {
+    const ids = profileId ? [profileId] : tasks.profiles.map((p) => p.id)
+    ids.forEach((pid) => {
+      const resultProfilePath = `${outDir}/result_${pid}.json`
+
+      fs.writeFileSync(resultProfilePath, JSON.stringify(result[pid]))
+    })
+  }
 
   function resetOtherFiles() {
     Object.entries(result).map(([pid, pr]) => {
@@ -78,14 +87,7 @@ function fileService(outDir: string, tasks: Task) {
     result,
     saveUserResult,
     saveOtherFile,
-    setResult: (profileId?: string) => {
-      const ids = profileId ? [profileId] : tasks.profiles.map((p) => p.id)
-      ids.forEach((pid) => {
-        const resultProfilePath = `${outDir}/result_${pid}.json`
-
-        fs.writeFileSync(resultProfilePath, JSON.stringify(result[pid]))
-      })
-    },
+    setResult,
   } as const
 }
 
@@ -133,19 +135,20 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
 
     const oldHash = _.get(
       result,
-      [profile.id, 'users', studentId, 'results', filePath + file.name, 'hash'],
+      [profile.id, 'users', studentId, 'results', file.name, 'hash'],
       ''
     ) as string
 
     const changed = hash !== oldHash
     if (!changed) {
+      console.log('skip')
       // no change
       return
     }
 
     const res = exec(fileInfo, file, plugins)
 
-    saveUserResult(fileInfo, file.name, hash, res.checks)
+    saveUserResult(profile.id, fileInfo, file.name, hash, res.checks)
     // saveUserResult(result, profile, studentId, file.name, status, hash, status)
     setResult(profile.id)
   }
