@@ -2,9 +2,9 @@ import Axios from 'axios'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Layout from '../components/Layout'
-import ResultTable from '../components/ResultTable'
-import { Result, Task } from '../types'
+import ResultPage from '../components/ResultPage'
 import { useLocalStorage } from '../components/useLocalStorage'
+import { Task } from '../types'
 
 const Style = styled.div`
   .tab {
@@ -72,7 +72,7 @@ const IndexPage = () => {
           </label>
         </div>
         {profile && (
-          <ResultTable
+          <ResultPage
             isViewOther={isViewOther}
             isViewTs={isViewTs}
             profile={profile}

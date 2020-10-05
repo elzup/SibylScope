@@ -56,7 +56,7 @@ type Props = {
   isViewOther: boolean
 }
 
-function ResultTable({ profile, isViewTs, isViewOther }: Props) {
+function ResultPage({ profile, isViewTs, isViewOther }: Props) {
   const [result, setResult] = useState<ProfileResult | 'loading' | 'none'>(
     'loading'
   )
@@ -73,7 +73,6 @@ function ResultTable({ profile, isViewTs, isViewOther }: Props) {
   }, [profile.id])
   if (result === 'loading') return <span>loading</span>
   if (result === 'none') return <span>no data</span>
-  console.log('test')
 
   return (
     <Style>
@@ -131,4 +130,4 @@ function ResultTable({ profile, isViewTs, isViewOther }: Props) {
   )
 }
 
-export default ResultTable
+export default ResultPage
