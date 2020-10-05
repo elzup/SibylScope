@@ -4,7 +4,8 @@ import styled from 'styled-components'
 import Layout from '../components/Layout'
 import ResultPage from '../components/ResultPage'
 import { useLocalStorage } from '../components/useLocalStorage'
-import { Task } from '../types'
+import { Profile, Task } from '../types'
+import _ from 'lodash'
 
 const Style = styled.div`
   .tab {
@@ -17,7 +18,10 @@ const Style = styled.div`
 `
 
 const IndexPage = () => {
-  const [tasks, setTasks] = useState<Task | null>(null)
+  const [profileById, setProfileById] = useState<Record<
+    string,
+    Profile
+  > | null>(null)
   const [selectId, setSelectId] = useLocalStorage<string>('select-tab', '')
   const [isViewTs, setViewTs] = useLocalStorage<boolean>('is-view-ts', false)
   const [isViewOther, setViewOther] = useLocalStorage<boolean>(
@@ -27,19 +31,19 @@ const IndexPage = () => {
 
   useEffect(() => {
     Axios.get<Task>('/tasks.json').then((data) => {
-      setTasks(data.data)
+      setProfileById(_.keyBy(data.data.profiles, 'id'))
     })
   }, [])
-  if (tasks === null) {
+  if (profileById === null) {
     return <p>loading</p>
   }
-  const profile = tasks.profiles.find((p) => p.id === selectId)
+  const profile = profileById[selectId]
   return (
     <Layout title="Home">
       <Style>
         <h1>課題View</h1>
         <div>
-          {tasks.profiles
+          {Object.values(profileById)
             .filter((p) => p.enabled)
             .map((p) => p.id)
             .map((pid) => (
