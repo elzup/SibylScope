@@ -1,8 +1,7 @@
-import { format } from 'date-fns'
-import styled from 'styled-components'
-import { Profile, ProfileResult } from '../types'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { docco } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import styled from 'styled-components'
+import { Profile, ProfileResult } from '../types'
 
 const Style = styled.div`
   width: 100%;
