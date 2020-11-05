@@ -69,10 +69,14 @@ function DiffTable({ result, filename }: Props) {
             .map(([userId, , file]) => (
               <tr key={userId}>
                 <th>{userId}</th>
+
                 <td className={'post-result'}>
-                  <SyntaxHighlighter language="diff" style={docco}>
-                    {file?.checks?.['diff'].text || ''}
-                  </SyntaxHighlighter>
+                  <details>
+                    <summary>diff code</summary>
+                    <SyntaxHighlighter language="diff" style={docco}>
+                      {file?.checks?.['diff'].text || ''}
+                    </SyntaxHighlighter>
+                  </details>
                 </td>
               </tr>
             ))}
