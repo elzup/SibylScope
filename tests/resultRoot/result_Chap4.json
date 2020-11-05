@@ -1,18 +1,1 @@
-{
-  "users": {
-    "user-a": {
-      "results": {
-        "Calc.java": {
-          "createdAt": 1598004248276,
-          "updatedAt": 1598004284400,
-          "hash": "KMB5t+1FVh/kJrg8G60UEw==",
-          "checks": {
-            "exists": { "status": "OK", "text": "OK" },
-            "java-code-test": { "status": "OK", "text": "OK" }
-          }
-        }
-      },
-      "otherFiles": []
-    }
-  }
-}
+{"users":{"user-a":{"results":{"Calc.java":{"createdAt":1598004248276,"updatedAt":1598004284400,"hash":"KMB5t+1FVh/kJrg8G60UEw==","checks":{"exists":{"status":"OK","text":"OK"},"java-code-test":{"status":"OK","text":"OK"}}}},"otherFiles":[]}}}

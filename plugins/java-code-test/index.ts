@@ -26,42 +26,38 @@ export default function main(fileInfo: FileInfo, config: unknown): Check {
   const workFilePath = workDir + '/' + filename
   copyFileSync(path, workFilePath)
 
-  execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
-
   // copy
   const testFileName = popFilename(config.path)
   const testFilePath = `${workDir}/${testFileName}`
+
   copyFileSync(config.path, testFilePath)
+  execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
+  execSync(`sed -i -e '/^package/d' ${workDir + '/' + testFileName}`)
+
   const className = testFileName.split('.')[0] || ''
   const cmd = buildDockerCommand(`javac ${testFileName} && java ${className}`)
   // saveUserResult(result, profile, studentId, file.name, status, hash, status)
   // setResult(profile.id)
-  const text = execSync(cmd, { encoding: 'utf8' }).trim()
+  return exec(cmd)
+}
 
-  return {
-    status: text as 'OK' | 'NG',
-    text,
+function exec(cmd: string) {
+  try {
+    const text = execSync(cmd, {
+      encoding: 'utf8',
+      timeout: 5000,
+      killSignal: 'SIGKILL',
+    }).trim()
+    return {
+      status: text === 'OK' ? 'OK' : 'NG',
+      text,
+    } as const
+  } catch (e) {
+    return {
+      status: 'NG',
+      text: `${e.errno} ${e.stderr}`,
+    } as const
   }
-
-  // } else if (file.case === 'run-test') {
-  // const cmd = buildDockerCommand(`java ${filename} ${file.args || ''}`)
-  // const resultText = execSync(cmd, { encoding: 'utf8' })
-
-  // return {
-  //   status: resultText.trim().match(file.expected) ? 'OK' : 'NG',
-  //   text:
-  // }
-
-  // saveUserResult(
-  //   result,
-  //   profile,
-  //   studentId,
-  //   file.name,
-  //   resultText,
-  //   hash,
-  //   resultText.trim().match(file.expected) ? 'OK' : 'NG'
-  // )
-  // setResult(profile.id)
 }
 
 const popFilename = (path: string) => path.split('/').pop() || ''
