@@ -48,7 +48,7 @@ type Props = {
   result: ProfileResult
 }
 
-function DiffTable({ profile, result, filename }: Props) {
+function DiffTable({ result, filename }: Props) {
   return (
     <Style>
       <table>
@@ -66,7 +66,7 @@ function DiffTable({ profile, result, filename }: Props) {
               ([userId, user]) =>
                 [userId, user, user?.results[filename]] as const
             )
-            .map(([userId, user, file]) => (
+            .map(([userId, , file]) => (
               <tr key={userId}>
                 <th>{userId}</th>
                 <td className={'post-result'}>

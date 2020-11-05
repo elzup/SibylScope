@@ -84,7 +84,7 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
 
                 {profile.files
                   .map((file) => [file, user?.results[file.name]] as const)
-                  .map(([file, userfile], i) => (
+                  .map(([file, userfile]) => (
                     <>
                       <td className="post-result">
                         <div>
@@ -96,11 +96,9 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
                           )}
                         </div>
                       </td>
-                      {Object.entries(file.plugins || {}).map(
-                        ([pid, plugin]) => (
-                          <td key={pid}>{userfile?.checks[pid]?.status}</td>
-                        )
-                      )}
+                      {Object.entries(file.plugins || {}).map(([pid]) => (
+                        <td key={pid}>{userfile?.checks[pid]?.status}</td>
+                      ))}
                     </>
                   ))}
                 <td data-visible={isViewOther}>

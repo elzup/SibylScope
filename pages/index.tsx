@@ -30,7 +30,7 @@ const IndexPage = () => {
   )
 
   useEffect(() => {
-    Axios.get<Task>('/tasks.json').then((data) => {
+    Axios.get<Task>('tasks.json').then((data) => {
       setProfileById(_.keyBy(data.data.profiles, 'id'))
     })
   }, [])

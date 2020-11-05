@@ -9,3 +9,4 @@ vm/
 !vm/.gitkeep
 /tester/
 /script/tests/codeRoot
+.env.production

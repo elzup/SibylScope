@@ -20,7 +20,7 @@ function ResultPage(props: Props) {
   useEffect(() => {
     updateResult()
     function updateResult() {
-      Axios.get<ProfileResult>(`/result_${profile.id}.json`).then((data) => {
+      Axios.get<ProfileResult>(`result_${profile.id}.json`).then((data) => {
         setResult(data.data)
       })
     }
