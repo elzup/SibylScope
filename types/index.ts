@@ -26,13 +26,10 @@ export type Plugin = {
   id: string
   func: (fileInfo: FileInfo, arg: unknown) => Check
 }
-
 export type ProfileFile = {
   name: string
   regex?: string
-  plugins?: {
-    [pluginId: string]: unknown
-  }
+  plugins?: Record<string, Plugin>
   // diffFile?: string
   // loadTestFile: string
   // expected?: {

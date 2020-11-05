@@ -37,16 +37,16 @@ function ResultPage(props: Props) {
       <Tabs>
         <TabList>
           <Tab>提出状況</Tab>
-          {diffFiles.map((df) => (
-            <Tab>{df.name}[diff]</Tab>
+          {diffFiles.map((df, i) => (
+            <Tab key={`tab${i}`}>{df.name}[diff]</Tab>
           ))}
         </TabList>
 
         <TabPanel>
           <ResultTable {...props} result={result} />
         </TabPanel>
-        {diffFiles.map((df) => (
-          <TabPanel>
+        {diffFiles.map((df, i) => (
+          <TabPanel key={`df-tab${i}`}>
             <DiffTable {...props} result={result} filename={df.name} />
           </TabPanel>
         ))}

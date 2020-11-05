@@ -62,9 +62,14 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
       <table>
         <thead>
           <tr>
-            <th></th>
+            <th>Student ID</th>
             {profile.files.map((file) => (
-              <th key={file.name}>{file.name}</th>
+              <>
+                <th>{file.name} _exists</th>
+                {Object.entries(file.plugins || {}).map(([pid, plugin]) => (
+                  <th key={plugin.id}>_{pid}</th>
+                ))}
+              </>
             ))}
             <th data-visible={isViewOther}>other files</th>
           </tr>
@@ -76,26 +81,28 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
             .map(([userId, user]) => (
               <tr key={userId}>
                 <th>{userId}</th>
+
                 {profile.files
                   .map((file) => [file, user?.results[file.name]] as const)
-                  .map(([_file, userfile], i) =>
-                    userfile ? (
-                      <td key={i} className={'post-result'}>
+                  .map(([file, userfile], i) => (
+                    <>
+                      <td className="post-result">
                         <div>
-                          {Object.entries(userfile.checks).map(([k, v]) => (
-                            <span key={k}>
-                              {k}: {v.status}
+                          {userfile ? 'OK' : 'NG'}
+                          {userfile && (
+                            <span data-visible={isViewTs}>
+                              ({format(userfile.createdAt, 'MM/dd HH:mm')})
                             </span>
-                          ))}
-                          <span data-visible={isViewTs}>
-                            ({format(userfile.createdAt, 'MM/dd HH:mm')})
-                          </span>
+                          )}
                         </div>
                       </td>
-                    ) : (
-                      <td key={i} />
-                    )
-                  )}
+                      {Object.entries(file.plugins || {}).map(
+                        ([pid, plugin]) => (
+                          <td key={pid}>{userfile?.checks[pid]?.status}</td>
+                        )
+                      )}
+                    </>
+                  ))}
                 <td data-visible={isViewOther}>
                   <div style={{ display: 'grid', width: '20vw' }}>
                     {user?.otherFiles.map((file) => (
