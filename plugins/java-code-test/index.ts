@@ -45,7 +45,7 @@ function exec(cmd: string) {
   try {
     const text = execSync(cmd, {
       encoding: 'utf8',
-      timeout: 5000,
+      timeout: 10000,
       killSignal: 'SIGKILL',
     }).trim()
     return {

@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import styled from 'styled-components'
-import { Profile, ProfileResult } from '../types'
+import { Profile, ProfileResult, Plugin } from '../types'
 
 const Style = styled.div`
   width: 100%;
@@ -55,6 +55,13 @@ type Props = {
   isViewOther: boolean
   result: ProfileResult
 }
+function pluginFilter(
+  plugins?: Record<string, Plugin>
+): Record<string, Plugin> {
+  const viewPlugins = { ...(plugins || {}) }
+  delete viewPlugins['diff']
+  return viewPlugins
+}
 
 function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
   return (
@@ -66,9 +73,11 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
             {profile.files.map((file) => (
               <>
                 <th>{file.name} _exists</th>
-                {Object.entries(file.plugins || {}).map(([pid, plugin]) => (
-                  <th key={plugin.id}>_{pid}</th>
-                ))}
+                {Object.entries(pluginFilter(file.plugins)).map(
+                  ([pid, plugin]) => (
+                    <th key={plugin.id}>_{pid}</th>
+                  )
+                )}
               </>
             ))}
             <th data-visible={isViewOther}>other files</th>
@@ -96,9 +105,23 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
                           )}
                         </div>
                       </td>
-                      {Object.entries(file.plugins || {}).map(([pid]) => (
-                        <td key={pid}>{userfile?.checks[pid]?.status}</td>
-                      ))}
+                      {Object.entries(pluginFilter(file.plugins)).map(([pid]) =>
+                        userfile?.checks[pid]?.status === 'NG' ? (
+                          <td key={pid}>
+                            {userfile?.checks[pid]?.status}{' '}
+                            {userfile?.checks[pid]?.text?.length <= 10 ? (
+                              <span>{userfile?.checks[pid]?.text}</span>
+                            ) : (
+                              <details>
+                                <summary>詳細</summary>
+                                {userfile?.checks[pid]?.text}
+                              </details>
+                            )}
+                          </td>
+                        ) : (
+                          <td key={pid}>{userfile?.checks[pid]?.status}</td>
+                        )
+                      )}
                     </>
                   ))}
                 <td data-visible={isViewOther}>
