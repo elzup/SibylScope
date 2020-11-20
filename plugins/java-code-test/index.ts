@@ -5,11 +5,17 @@ import { FileInfo, Check } from '../../types'
 
 type Config = {
   path: string
+  additionalFiles?: string[]
 }
 
 const isConfig = (config: unknown): config is Config => {
   if (typeof config !== 'object' || config === null) return false
   if (typeof config['path'] !== 'string') return false
+  if (
+    config['additionalFiles'] &&
+    typeof config['additionalFiles'] !== 'object'
+  )
+    return false
   return true
 }
 
@@ -29,8 +35,16 @@ export default function main(fileInfo: FileInfo, config: unknown): Check {
   // copy
   const testFileName = popFilename(config.path)
   const testFilePath = `${workDir}/${testFileName}`
-
   copyFileSync(config.path, testFilePath)
+
+  if (config.additionalFiles) {
+    config.additionalFiles.forEach((filePath) => {
+      const fileName = popFilename(filePath)
+      const path = `${workDir}/${fileName}`
+      copyFileSync(filePath, path)
+      execSync(`sed -i -e '/^package/d' ${path}`)
+    })
+  }
   execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
   execSync(`sed -i -e '/^package/d' ${workDir + '/' + testFileName}`)
 
