@@ -1,7 +1,9 @@
+import { useRef } from 'react'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { docco } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 import styled from 'styled-components'
 import { Profile, ProfileResult } from '../types'
+import { useLocalStorage } from './useLocalStorage'
 
 const Style = styled.div`
   width: 100%;
@@ -47,15 +49,38 @@ type Props = {
   filename: string
   result: ProfileResult
 }
-
+type Review = {
+  note: string
+  point: number
+}
 function DiffTable({ result, filename }: Props) {
+  const [reviews, setReviews] = useLocalStorage<Record<string, Review>>(
+    `diff_rev_${filename}`,
+    {}
+  )
+  const ref = useRef<HTMLDivElement>(null)
+
+  const openAll = () => {
+    if (!ref.current) return
+    const res = Array.prototype.slice.call(
+      ref.current.getElementsByTagName('details')
+    )
+    res.forEach((e) => {
+      e.setAttribute('open', 'true')
+    })
+  }
+
   return (
-    <Style>
+    <Style ref={ref}>
       <table>
         <thead>
           <tr>
             <th>ID</th>
             <th>Code</th>
+            <th>diff行数</th>
+            <th>採点</th>
+            <th>ID</th>
+            <th>点数</th>
           </tr>
         </thead>
         <tbody>
@@ -71,13 +96,41 @@ function DiffTable({ result, filename }: Props) {
                 <th>{userId}</th>
 
                 <td className={'post-result'}>
-                  <details>
-                    <summary>diff code</summary>
-                    <SyntaxHighlighter language="diff" style={docco}>
-                      {file?.checks?.['diff'].text || ''}
-                    </SyntaxHighlighter>
-                  </details>
+                  {file?.checks?.['diff'].text && (
+                    <details>
+                      <summary>diff code</summary>
+                      <SyntaxHighlighter language="diff" style={docco}>
+                        {file?.checks?.['diff'].text || ''}
+                      </SyntaxHighlighter>
+                    </details>
+                  )}
                 </td>
+                <td>
+                  {file?.checks?.['diff'].text
+                    ? file?.checks?.['diff'].text.split('\n').length
+                    : '-'}
+                </td>
+                <td>
+                  {' '}
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    value={reviews[userId]?.point || 0}
+                    onChange={(e) =>
+                      setReviews((v) => ({
+                        ...v,
+                        [userId]: {
+                          ...v[userId],
+                          point: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    step="1"
+                  />
+                </td>
+                <th>{userId}</th>
+                <td>{reviews[userId]?.point || 0}</td>
               </tr>
             ))}
         </tbody>

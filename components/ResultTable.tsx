@@ -43,6 +43,9 @@ const Style = styled.div`
   }
   td.post-result > div {
     display: grid;
+    &[data-state='true'] {
+      color: green;
+    }
   }
   [data-visible='false'] {
     display: none;
@@ -64,6 +67,9 @@ function pluginFilter(
 }
 
 function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
+  // const plugsins = profile.files.map((file) =>
+  //   Object.entries(pluginFilter(file.plugins))
+  // )
   return (
     <Style>
       <table>
@@ -72,7 +78,7 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
             <th>Student ID</th>
             {profile.files.map((file) => (
               <>
-                <th>{file.name} _exists</th>
+                <th>{file.name}</th>
                 {Object.entries(pluginFilter(file.plugins)).map(
                   ([pid, plugin]) => (
                     <th key={plugin.id}>_{pid}</th>
@@ -96,7 +102,7 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
                   .map(([file, userfile]) => (
                     <>
                       <td className="post-result">
-                        <div>
+                        <div data-state={!!userfile}>
                           {userfile ? 'OK' : 'NG'}
                           {userfile && (
                             <span data-visible={isViewTs}>

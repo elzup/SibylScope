@@ -121,6 +121,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
 
     const file = profile.files.find((f) =>
       // NOTE: .file も直で regex にしている
+
       new RegExp((f.regex || f.name).toLowerCase()).exec(
         (filePath + filename).toLowerCase()
       )
