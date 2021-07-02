@@ -4,6 +4,7 @@ import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import { Profile, ProfileResult } from '../types'
 import DiffTable from './DiffTable'
 import ResultTable from './ResultTable'
+import { useLocalStorage } from './useLocalStorage'
 
 type Props = {
   profile: Profile
@@ -16,6 +17,7 @@ function ResultPage(props: Props) {
   const [result, setResult] = useState<ProfileResult | 'loading' | 'none'>(
     'loading'
   )
+  const [filterIds, setFilterIds] = useLocalStorage<string[]>('filterIds', [])
 
   useEffect(() => {
     updateResult()
@@ -43,7 +45,7 @@ function ResultPage(props: Props) {
         </TabList>
 
         <TabPanel>
-          <ResultTable {...props} result={result} />
+          <ResultTable {...props} result={result} filterIds={filterIds} />
         </TabPanel>
         {diffFiles.map((df, i) => (
           <TabPanel key={`df-tab${i}`}>
@@ -51,6 +53,19 @@ function ResultPage(props: Props) {
           </TabPanel>
         ))}
       </Tabs>
+      <h5>StudentId Filter(改行区切り)</h5>
+      <textarea
+        defaultValue={filterIds.join('\n')}
+        onChange={(e) => {
+          const idText = e.target.value.trim()
+          if (idText === '') return setFilterIds([])
+
+          const sids = idText.split('\n')
+          setFilterIds(sids)
+        }}
+      ></textarea>
+
+      {filterIds && <p> オン({filterIds.length}) </p>}
     </div>
   )
 }

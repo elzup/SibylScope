@@ -212,5 +212,7 @@ function exec(
 function filehash(path) {
   const hash = crypto.createHash('md5')
   hash.update(fs.readFileSync(path))
-  return hash.digest('base64')
+  const hashstr = hash.digest('base64')
+  // console.log(path, hashstr)
+  return hashstr
 }

@@ -56,6 +56,7 @@ type Props = {
   profile: Profile
   isViewTs: boolean
   isViewOther: boolean
+  filterIds: string[]
   result: ProfileResult
 }
 function pluginFilter(
@@ -66,10 +67,22 @@ function pluginFilter(
   return viewPlugins
 }
 
-function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
+function ResultPage({
+  profile,
+  isViewTs,
+  isViewOther,
+  result,
+  filterIds,
+}: Props) {
   // const plugsins = profile.files.map((file) =>
   //   Object.entries(pluginFilter(file.plugins))
   // )
+  const entries =
+    filterIds.length > 0
+      ? filterIds.map((sid) => [sid, result.users[sid]] as const)
+      : Object.entries(result.users)
+  const records = entries.sort(([ida], [idb]) => ida.localeCompare(idb))
+
   return (
     <Style>
       <table>
@@ -90,55 +103,52 @@ function ResultPage({ profile, isViewTs, isViewOther, result }: Props) {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(result.users)
-            .sort(([ida], [idb]) => ida.localeCompare(idb))
-            // .map((sid) => [sid, result.users[sid]] as const)
-            .map(([userId, user]) => (
-              <tr key={userId}>
-                <th>{userId}</th>
+          {records.map(([userId, user]) => (
+            <tr key={userId}>
+              <th>{userId}</th>
 
-                {profile.files
-                  .map((file) => [file, user?.results[file.name]] as const)
-                  .map(([file, userfile]) => (
-                    <>
-                      <td className="post-result">
-                        <div data-state={!!userfile}>
-                          {userfile ? 'OK' : 'NG'}
-                          {userfile && (
-                            <span data-visible={isViewTs}>
-                              ({format(userfile.createdAt, 'MM/dd HH:mm')})
-                            </span>
+              {profile.files
+                .map((file) => [file, user?.results[file.name]] as const)
+                .map(([file, userfile]) => (
+                  <>
+                    <td className="post-result">
+                      <div data-state={!!userfile}>
+                        {userfile ? 'OK' : 'NG'}
+                        {userfile && (
+                          <span data-visible={isViewTs}>
+                            ({format(userfile.createdAt, 'MM/dd HH:mm')})
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    {Object.entries(pluginFilter(file.plugins)).map(([pid]) =>
+                      userfile?.checks[pid]?.status === 'NG' ? (
+                        <td key={pid}>
+                          {userfile?.checks[pid]?.status}{' '}
+                          {userfile?.checks[pid]?.text?.length <= 10 ? (
+                            <span>{userfile?.checks[pid]?.text}</span>
+                          ) : (
+                            <details>
+                              <summary>詳細</summary>
+                              {userfile?.checks[pid]?.text}
+                            </details>
                           )}
-                        </div>
-                      </td>
-                      {Object.entries(pluginFilter(file.plugins)).map(([pid]) =>
-                        userfile?.checks[pid]?.status === 'NG' ? (
-                          <td key={pid}>
-                            {userfile?.checks[pid]?.status}{' '}
-                            {userfile?.checks[pid]?.text?.length <= 10 ? (
-                              <span>{userfile?.checks[pid]?.text}</span>
-                            ) : (
-                              <details>
-                                <summary>詳細</summary>
-                                {userfile?.checks[pid]?.text}
-                              </details>
-                            )}
-                          </td>
-                        ) : (
-                          <td key={pid}>{userfile?.checks[pid]?.status}</td>
-                        )
-                      )}
-                    </>
+                        </td>
+                      ) : (
+                        <td key={pid}>{userfile?.checks[pid]?.status}</td>
+                      )
+                    )}
+                  </>
+                ))}
+              <td data-visible={isViewOther}>
+                <div style={{ display: 'grid', width: '20vw' }}>
+                  {user?.otherFiles.map((file) => (
+                    <span key={file.name}>{file.name}</span>
                   ))}
-                <td data-visible={isViewOther}>
-                  <div style={{ display: 'grid', width: '20vw' }}>
-                    {user?.otherFiles.map((file) => (
-                      <span key={file.name}>{file.name}</span>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </Style>
