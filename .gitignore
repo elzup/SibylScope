@@ -10,3 +10,4 @@ vm/
 /tester/
 /script/tests/codeRoot
 .env.production
+.envrc
