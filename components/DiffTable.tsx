@@ -61,15 +61,15 @@ function DiffTable({ result, filename, filterIds }: Props) {
   )
   const ref = useRef<HTMLDivElement>(null)
 
-  const openAll = () => {
-    if (!ref.current) return
-    const res = Array.prototype.slice.call(
-      ref.current.getElementsByTagName('details')
-    )
-    res.forEach((e) => {
-      e.setAttribute('open', 'true')
-    })
-  }
+  // const openAll = () => {
+  //   if (!ref.current) return
+  //   const res = Array.prototype.slice.call(
+  //     ref.current.getElementsByTagName('details')
+  //   )
+  //   res.forEach((e) => {
+  //     e.setAttribute('open', 'true')
+  //   })
+  // }
   const entries =
     filterIds.length > 0
       ? filterIds.map((sid) => [sid, result.users[sid]] as const)
@@ -116,7 +116,25 @@ function DiffTable({ result, filename, filterIds }: Props) {
                     : '-'}
                 </td>
                 <td>
-                  <input
+                  {[1, 2, 3, 4, 5].map((point) => (
+                    <input
+                      key={`p_${point}`}
+                      type="radio"
+                      name={`point_${filename}_${userId}`}
+                      value={point}
+                      defaultChecked={(reviews[userId]?.point || 0) === point}
+                      onChange={(e) =>
+                        setReviews((v) => ({
+                          ...v,
+                          [userId]: {
+                            ...v[userId],
+                            point: Number(e.target.value),
+                          },
+                        }))
+                      }
+                    />
+                  ))}
+                  {/* <input
                     type="range"
                     min="0"
                     max="5"
@@ -131,7 +149,7 @@ function DiffTable({ result, filename, filterIds }: Props) {
                       }))
                     }
                     step="1"
-                  />
+                  /> */}
                 </td>
                 <th>{userId}</th>
                 <td>{reviews[userId]?.point || 0}</td>
