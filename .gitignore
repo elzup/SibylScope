@@ -2,6 +2,7 @@ node_modules
 .next
 
 out/
+out*/
 public/tasks*.json
 public/result_*.json
 
