@@ -83,6 +83,21 @@ function ResultPage({
       : Object.entries(result.users)
   const records = entries.sort(([ida], [idb]) => ida.localeCompare(idb))
 
+  const csvText = [
+    'sid\t' + profile.files.map((file) => file.name).join('\t'),
+    ...records.map(([sid, user]) => {
+      return (
+        sid +
+        '\t' +
+        profile.files
+          .map((file) => (user?.results[file.name] ? '1' : '0'))
+          .join('\t') +
+        '\t' +
+        user?.otherFiles?.map((f) => f.name)?.join(',')
+      )
+    }),
+  ].join('\n')
+
   return (
     <Style>
       <table>
@@ -151,6 +166,9 @@ function ResultPage({
           ))}
         </tbody>
       </table>
+      <pre>
+        <code>{csvText}</code>
+      </pre>
     </Style>
   )
 }

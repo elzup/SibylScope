@@ -48,12 +48,13 @@ type Props = {
   profile: Profile
   filename: string
   result: ProfileResult
+  filterIds: string[]
 }
 type Review = {
   note: string
   point: number
 }
-function DiffTable({ result, filename }: Props) {
+function DiffTable({ result, filename, filterIds }: Props) {
   const [reviews, setReviews] = useLocalStorage<Record<string, Review>>(
     `diff_rev_${filename}`,
     {}
@@ -69,6 +70,10 @@ function DiffTable({ result, filename }: Props) {
       e.setAttribute('open', 'true')
     })
   }
+  const entries =
+    filterIds.length > 0
+      ? filterIds.map((sid) => [sid, result.users[sid]] as const)
+      : Object.entries(result.users)
 
   return (
     <Style ref={ref}>
@@ -84,7 +89,7 @@ function DiffTable({ result, filename }: Props) {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(result.users)
+          {entries
             .sort(([ida], [idb]) => ida.localeCompare(idb))
             // .map((sid) => [sid, result.users[sid]] as const)
             .map(
@@ -111,7 +116,6 @@ function DiffTable({ result, filename }: Props) {
                     : '-'}
                 </td>
                 <td>
-                  {' '}
                   <input
                     type="range"
                     min="0"

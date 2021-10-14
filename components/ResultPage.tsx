@@ -49,7 +49,12 @@ function ResultPage(props: Props) {
         </TabPanel>
         {diffFiles.map((df, i) => (
           <TabPanel key={`df-tab${i}`}>
-            <DiffTable {...props} result={result} filename={df.name} />
+            <DiffTable
+              {...props}
+              result={result}
+              filename={df.name}
+              filterIds={filterIds}
+            />
           </TabPanel>
         ))}
       </Tabs>
