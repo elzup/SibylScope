@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
 import styled from 'styled-components'
-import { Profile, ProfileResult, Plugin } from '../types'
+import { Plugin, Profile, ProfileResult } from '../types'
+import { CheckResultCell } from './CheckResultCell'
 
 const Style = styled.div`
   width: 100%;
@@ -136,23 +137,12 @@ function ResultPage({
                         )}
                       </div>
                     </td>
-                    {Object.entries(pluginFilter(file.plugins)).map(([pid]) =>
-                      userfile?.checks[pid]?.status === 'NG' ? (
-                        <td key={pid}>
-                          {userfile?.checks[pid]?.status}{' '}
-                          {userfile?.checks[pid]?.text?.length <= 10 ? (
-                            <span>{userfile?.checks[pid]?.text}</span>
-                          ) : (
-                            <details>
-                              <summary>詳細</summary>
-                              {userfile?.checks[pid]?.text}
-                            </details>
-                          )}
-                        </td>
-                      ) : (
-                        <td key={pid}>{userfile?.checks[pid]?.status}</td>
-                      )
-                    )}
+                    {Object.entries(pluginFilter(file.plugins)).map(([pid]) => (
+                      <CheckResultCell
+                        pid={pid}
+                        check={userfile?.checks[pid]}
+                      />
+                    ))}
                   </>
                 ))}
               <td data-visible={isViewOther}>

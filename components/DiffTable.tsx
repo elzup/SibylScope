@@ -3,6 +3,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter'
 import { docco } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 import styled from 'styled-components'
 import { Profile, ProfileResult } from '../types'
+import { CheckResultCell } from './CheckResultCell'
 import { useLocalStorage } from './useLocalStorage'
 
 const Style = styled.div`
@@ -61,15 +62,21 @@ function DiffTable({ result, filename, filterIds }: Props) {
   )
   const ref = useRef<HTMLDivElement>(null)
 
-  // const openAll = () => {
-  //   if (!ref.current) return
-  //   const res = Array.prototype.slice.call(
-  //     ref.current.getElementsByTagName('details')
-  //   )
-  //   res.forEach((e) => {
-  //     e.setAttribute('open', 'true')
-  //   })
-  // }
+  const foldAll = (toOpen = true) => {
+    if (!ref.current) return
+    const res = Array.prototype.slice.call(
+      ref.current.getElementsByTagName('details')
+    )
+    res.forEach((e) => {
+      if (toOpen) {
+        e.setAttribute('open', 'true')
+      } else {
+        e.removeAttribute('open')
+      }
+    })
+  }
+  const openAll = () => foldAll()
+  const closeAll = foldAll.bind(null, false)
   const entries =
     filterIds.length > 0
       ? filterIds.map((sid) => [sid, result.users[sid]] as const)
@@ -77,12 +84,15 @@ function DiffTable({ result, filename, filterIds }: Props) {
 
   return (
     <Style ref={ref}>
+      <button onClick={openAll}>すべて開く</button>
+      <button onClick={closeAll}>すべて閉じる</button>
       <table>
         <thead>
           <tr>
             <th>ID</th>
             <th>Code</th>
             <th>diff行数</th>
+            <th>CodeTest</th>
             <th>採点</th>
             <th>ID</th>
             <th>点数</th>
@@ -134,23 +144,11 @@ function DiffTable({ result, filename, filterIds }: Props) {
                       }
                     />
                   ))}
-                  {/* <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    value={reviews[userId]?.point || 0}
-                    onChange={(e) =>
-                      setReviews((v) => ({
-                        ...v,
-                        [userId]: {
-                          ...v[userId],
-                          point: Number(e.target.value),
-                        },
-                      }))
-                    }
-                    step="1"
-                  /> */}
                 </td>
+                <CheckResultCell
+                  check={file?.checks['java-code-test']}
+                  pid="java-code-test"
+                />
                 <th>{userId}</th>
                 <td>{reviews[userId]?.point || 0}</td>
               </tr>

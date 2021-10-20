@@ -2,17 +2,19 @@ export type Check = {
   status: 'OK' | 'CL' | 'NG'
   text: string
 }
+
+export type CheckResult = {
+  createdAt: number
+  updatedAt: number
+  hash: string
+  checks: { [id: string]: Check }
+}
 export type Checks = { [id: string]: Check }
 export type ProfileResult = {
   users: {
     [userId: string]: {
       results: {
-        [name: string]: {
-          createdAt: number
-          updatedAt: number
-          hash: string
-          checks: { [id: string]: Check }
-        }
+        [name: string]: CheckResult
       }
       otherFiles: { name: string }[]
     }
