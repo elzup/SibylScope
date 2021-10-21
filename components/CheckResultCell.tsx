@@ -11,15 +11,8 @@ export const CheckResultCell = ({ check, pid }: Props) => {
 
   return (
     <td key={pid}>
-      {check?.status}{' '}
-      {check?.text?.length <= 10 ? (
-        <span>{check?.text}</span>
-      ) : (
-        <details>
-          <summary>詳細</summary>
-          {check?.text}
-        </details>
-      )}
+      {check?.status}
+      <div>{check?.text.substring(0, 10)}</div>
     </td>
   )
 }
