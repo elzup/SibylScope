@@ -14,6 +14,7 @@ import {
 } from '../types'
 import { loadPlugins } from './loadPlugins'
 import { loadTasks } from './loadTasks'
+import { insert } from './notionClient'
 
 function fileService(outDir: string, tasks: Task) {
   const result: Result = {}
@@ -47,6 +48,12 @@ function fileService(outDir: string, tasks: Task) {
   ) {
     console.log(`log: ${profileId}, ${studentId}, ${name}`)
     initializeUser(profileId, studentId)
+    const checkResult = checks['java-code-test']
+      ? `${checks['java-code-test'].status} ${checks[
+          'java-code-test'
+        ].text.substring(0, 20)}`
+      : 'Submit'
+    insert(studentId, name, checkResult, hash)
 
     const now = Date.now()
     if (!result[profileId].users[studentId].results[name]) {
@@ -109,23 +116,31 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
   tasks.profiles
     .filter((p) => p.enabled)
     .forEach((p) => (profileCheck[p.dir] = p))
+  console.log({ profileCheck })
+
   const execEx = (path: string) => {
+    // console.log({ path })
+
     const fileInfo = parsePath(path, watchDir)
+
     if (!fileInfo) return
     const { filename, studentId, profileId, filePath } = fileInfo
 
+    console.log({ profileId })
     const profile = profileCheck[profileId]
+
     if (!filename || !studentId || !profileId || !profile) {
       return
     }
 
-    const file = profile.files.find((f) =>
+    const file = profile.files.find((f) => {
       // NOTE: .file も直で regex にしている
 
-      new RegExp((f.regex || f.name).toLowerCase()).exec(
-        (filePath + filename).toLowerCase()
-      )
-    )
+      const path = f.regex || f.name
+      const target = filePath + filename
+
+      return new RegExp(path.toLowerCase()).exec(target.toLowerCase())
+    })
 
     if (!file) {
       saveOtherFile(profile, studentId, filePath + filename)
@@ -177,8 +192,8 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
 function parsePath(path: string, watchDir): FileInfo | false {
   const paths = path.replace(watchDir, '').split('/')
 
-  // paths.shift()
   const profileId = paths.shift()
+  // const profileId = 'Exam'
   const studentId = paths.shift()
   const filename = paths.pop()
   if (!filename || !studentId || !profileId) return false

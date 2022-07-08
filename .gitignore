@@ -12,3 +12,5 @@ vm/
 /script/tests/codeRoot
 .env.production
 .envrc
+
+tmp

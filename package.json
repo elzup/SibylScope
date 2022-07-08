@@ -12,6 +12,7 @@
     "serve:dev": "ts-node --project tsconfig.node.json script/watch.ts"
   },
   "dependencies": {
+    "@notionhq/client": "^2.0.0",
     "axios": "^0.19.2",
     "date-fns": "^2.14.0",
     "next": "latest",
