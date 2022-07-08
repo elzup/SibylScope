@@ -77,6 +77,7 @@ const IndexPage = () => {
         </div>
         {profile && (
           <ResultPage
+            showScoring
             isViewOther={isViewOther}
             isViewTs={isViewTs}
             profile={profile}

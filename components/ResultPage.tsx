@@ -10,10 +10,11 @@ type Props = {
   profile: Profile
   isViewTs: boolean
   isViewOther: boolean
+  showScoring?: boolean
 }
 
 function ResultPage(props: Props) {
-  const { profile } = props
+  const { profile, showScoring = false } = props
   const [result, setResult] = useState<ProfileResult | 'loading' | 'none'>(
     'loading'
   )
@@ -39,9 +40,10 @@ function ResultPage(props: Props) {
       <Tabs>
         <TabList>
           <Tab>提出状況</Tab>
-          {diffFiles.map((df, i) => (
-            <Tab key={`tab${i}`}>{df.name}[diff]</Tab>
-          ))}
+          {showScoring &&
+            diffFiles.map((df, i) => (
+              <Tab key={`tab${i}`}>{df.name}[diff]</Tab>
+            ))}
         </TabList>
 
         <TabPanel>
