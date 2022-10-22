@@ -14,7 +14,7 @@ import {
 } from '../types'
 import { loadPlugins } from './loadPlugins'
 import { loadTasks } from './loadTasks'
-import { insert } from './notionClient'
+import { insert, notionEnabled } from './notionClient'
 
 function fileService(outDir: string, tasks: Task) {
   const result: Result = {}
@@ -53,7 +53,9 @@ function fileService(outDir: string, tasks: Task) {
           'java-code-test'
         ].text.substring(0, 20)}`
       : 'Submit'
-    insert(studentId, name, checkResult, hash)
+    if (notionEnabled) {
+      insert(studentId, name, checkResult, hash)
+    }
 
     const now = Date.now()
     if (!result[profileId].users[studentId].results[name]) {
@@ -119,7 +121,7 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
   console.log({ profileCheck })
 
   const execEx = (path: string) => {
-    // console.log({ path })
+    console.log(path)
 
     const fileInfo = parsePath(path, watchDir)
 

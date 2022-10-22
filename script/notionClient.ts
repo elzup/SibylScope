@@ -3,6 +3,7 @@ import { Client } from '@notionhq/client'
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 })
+export const notionEnabled = process.env.NOTION_ENABLED === 'true'
 
 export function insert(id: string, q: string, result: string, hash: string) {
   // notion.databases.query({
