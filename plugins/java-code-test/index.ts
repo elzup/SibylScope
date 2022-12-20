@@ -45,15 +45,27 @@ export default function main(fileInfo: FileInfo, config: unknown): Check {
       execSync(`sed -i -e '/^package/d' ${path}`)
     })
   }
-  execSync(`sed -i -e '/^package/d' ${workDir + '/' + filename}`)
-  execSync(`sed -i -e '/^package/d' ${workDir + '/' + testFileName}`)
+  execSync(`export LANG=C`)
+  execSync(`export LC_CTYPE=C`)
+  execSync(`LC_ALL=C sed -i -e '/^package/d' ${workDir + '/' + filename}`)
+  execSync(`LC_ALL=C sed -i -e '/^package/d' ${workDir + '/' + testFileName}`)
 
   const className = testFileName.split('.')[0] || ''
-  const cmd = buildDockerCommand(`javac ${testFileName} && java ${className}`)
+  const cmd = buildDockerCommand(
+    `javac -encoding UTF-8 ${testFileName} && java ${className}`
+  )
   // saveUserResult(result, profile, studentId, file.name, status, hash, status)
   // setResult(profile.id)
   return exec(cmd)
 }
+
+type ErrorResult = {
+  status: 'OK' | 'NG'
+  errno: string
+  stderr: string
+}
+const isErrorResult = (e: unknown): e is ErrorResult =>
+  typeof e === 'object' && e !== null && 'error' in e
 
 function exec(cmd: string) {
   try {
@@ -67,10 +79,17 @@ function exec(cmd: string) {
       text,
     } as const
   } catch (e) {
+    if (isErrorResult(e)) {
+      return {
+        status: 'NG' as const,
+        text: `${e.errno} ${e.stderr}`,
+      }
+    }
+    console.log(e)
     return {
-      status: 'NG',
-      text: `${e.errno} ${e.stderr}`,
-    } as const
+      status: 'NG' as const,
+      text: `${0} unknown error`,
+    }
   }
 }
 

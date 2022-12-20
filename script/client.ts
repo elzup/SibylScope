@@ -121,14 +121,12 @@ export function client(outDir: string, watchDir: string, pluginDir: string) {
   console.log({ profileCheck })
 
   const execEx = (path: string) => {
-    console.log(path)
-
     const fileInfo = parsePath(path, watchDir)
 
     if (!fileInfo) return
     const { filename, studentId, profileId, filePath } = fileInfo
+    console.log({ filename, studentId })
 
-    console.log({ profileId })
     const profile = profileCheck[profileId]
 
     if (!filename || !studentId || !profileId || !profile) {

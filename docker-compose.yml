@@ -6,3 +6,5 @@ services:
       - ./vm:/root
     tty: true
     container_name: java
+    environment:
+      LANG: C

@@ -94,7 +94,12 @@ function ResultPage({
           .map((file) => (user?.results[file.name] ? '1' : '0'))
           .join('\t') +
         '\t' +
-        user?.otherFiles?.map((f) => f.name)?.join(',')
+        profile.files
+          .map(
+            (file) => user?.results[file.name]?.checks?.['diff']?.text.length
+          )
+          .join('\t')
+        // user?.otherFiles?.map((f) => f.name)?.join(',')
       )
     }),
   ].join('\n')
