@@ -1,4 +1,4 @@
-import Axios from 'axios'
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Layout from '../components/Layout'
@@ -6,6 +6,7 @@ import ResultPage from '../components/ResultPage'
 import { useLocalStorage } from '../components/useLocalStorage'
 import { Profile, Task } from '../types'
 import _ from 'lodash'
+import React from 'react'
 
 const Style = styled.div`
   .tab {
@@ -30,7 +31,7 @@ const IndexPage = () => {
   )
 
   useEffect(() => {
-    Axios.get<Task>('tasks.json').then((data) => {
+    axios.get<Task>('tasks.json').then((data) => {
       setProfileById(_.keyBy(data.data.profiles, 'id'))
     })
   }, [])
