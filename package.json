@@ -15,7 +15,7 @@
     "@notionhq/client": "^2.0.0",
     "axios": "^0.19.2",
     "date-fns": "^2.14.0",
-    "next": "latest",
+    "next": "^9",
     "next-compose-plugins": "^2.2.0",
     "next-transpile-modules": "^4.1.0",
     "react": "^16.12.0",

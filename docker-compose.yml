@@ -1,6 +1,7 @@
 version: '3'
 services:
   java:
+    platform: linux/x86_64
     image: openjdk:14-slim
     volumes:
       - ./vm:/root
